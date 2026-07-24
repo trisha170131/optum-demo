@@ -1,0 +1,32 @@
+[
+  {
+    "resourceType": "Coverage",
+    "id": "cov-001",
+    "status": "active",
+    "beneficiary": { "reference": "Patient/pat-001" },
+    "payor": [{ "display": "Meridian Health Plan" }],
+    "class": [{ "type": { "text": "group" }, "value": "GRP-4471" }],
+    "extension": [{ "url": "plan-type", "valueString": "PPO" }],
+    "subscriberId": "MHP-88213045"
+  },
+  {
+    "resourceType": "Coverage",
+    "id": "cov-002",
+    "status": "active",
+    "beneficiary": { "reference": "Patient/pat-002" },
+    "payor": [{ "display": "Summit Care Insurance" }],
+    "class": [{ "type": { "text": "group" }, "value": "GRP-1120" }],
+    "extension": [{ "url": "plan-type", "valueString": "HMO" }],
+    "subscriberId": "SCI-55021198"
+  },
+  {
+    "resourceType": "Coverage",
+    "id": "cov-003",
+    "status": "active",
+    "beneficiary": { "reference": "Patient/pat-003" },
+    "payor": [{ "display": "Heritage Medicare Advantage" }],
+    "class": [{ "type": { "text": "group" }, "value": "GRP-0099" }],
+    "extension": [{ "url": "plan-type", "valueString": "Medicare Advantage" }],
+    "subscriberId": "HMA-11004477"
+  }
+]

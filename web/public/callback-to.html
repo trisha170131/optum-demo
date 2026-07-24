@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Signing you in...</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body, button, input, textarea, select { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; }
+</style>
+</head>
+<body class="bg-[#F9F8F6] min-h-screen flex items-center justify-center">
+<div class="text-center">
+  <div class="inline-block mb-4 text-[#FF612B]">
+    <svg class="w-12 h-12 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+  </div>
+  <p class="text-[#374151] font-medium">Signing you in...</p>
+  <p class="text-[#6B7280] text-sm mt-2">This will only take a moment.</p>
+</div>
+
+<script type="module">
+  (async () => {
+    try {
+      const code = new URLSearchParams(location.search).get('code');
+      const page = new URLSearchParams(location.search).get('page') || 'dashboard.html';
+
+      if (!code) throw new Error('No code in URL');
+
+      // Exchange code for token
+      const tokenResp = await fetch('/api/smart/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+
+      if (!tokenResp.ok) throw new Error('Token exchange failed');
+
+      const { access_token } = await tokenResp.json();
+      sessionStorage.setItem('smart_access_token', access_token);
+
+      // Redirect to the requested page
+      location.href = `/${page}`;
+    } catch (err) {
+      console.error('Auth error:', err);
+      document.body.innerHTML = `<div class="text-center"><p class="text-red-600">Error: ${err.message}</p></div>`;
+    }
+  })();
+</script>
+</body>
+</html>

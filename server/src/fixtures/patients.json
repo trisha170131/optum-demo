@@ -1,0 +1,40 @@
+[
+  {
+    "resourceType": "Patient",
+    "id": "pat-001",
+    "name": [{ "text": "Maria Alvarez", "family": "Alvarez", "given": ["Maria"] }],
+    "birthDate": "1985-03-14",
+    "telecom": [
+      { "system": "phone", "value": "555-201-0001", "use": "mobile" },
+      { "system": "email", "value": "maria.alvarez@example.com" }
+    ],
+    "address": [
+      { "line": ["412 Willow St"], "city": "Springfield", "state": "IL", "postalCode": "62701" }
+    ]
+  },
+  {
+    "resourceType": "Patient",
+    "id": "pat-002",
+    "name": [{ "text": "James Chen", "family": "Chen", "given": ["James"] }],
+    "birthDate": "1990-11-02",
+    "telecom": [
+      { "system": "phone", "value": "555-201-0002", "use": "mobile" },
+      { "system": "email", "value": "james.chen@example.com" }
+    ],
+    "address": [
+      { "line": ["88 Harbor Ave"], "city": "Springfield", "state": "IL", "postalCode": "62702" }
+    ]
+  },
+  {
+    "resourceType": "Patient",
+    "id": "pat-003",
+    "name": [{ "text": "Robert Klein", "family": "Klein", "given": ["Robert"] }],
+    "birthDate": "1948-07-22",
+    "telecom": [
+      { "system": "phone", "value": "555-201-0003", "use": "home" }
+    ],
+    "address": [
+      { "line": ["9 Maple Ct"], "city": "Springfield", "state": "IL", "postalCode": "62703" }
+    ]
+  }
+]

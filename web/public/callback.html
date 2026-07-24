@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Signing you in...</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body, button, input, textarea, select { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center">
+<p id="status" class="text-slate-500 text-sm">Completing sign-in...</p>
+<script type="module">
+  // Mirrors a real SMART app's post-authorization step: exchange the one-time code for an
+  // access token, then use the launch context (patient/encounter + granted scopes) to decide
+  // which view to open. A production app would store the token more carefully than
+  // sessionStorage and would refresh it — this is a demo-only shortcut.
+  const code = new URLSearchParams(location.search).get('code');
+  const statusEl = document.getElementById('status');
+  if (!code) {
+    statusEl.textContent = 'Missing authorization code.';
+  } else {
+    const res = await fetch('/api/smart/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    if (!res.ok) {
+      statusEl.textContent = 'Sign-in failed: invalid or expired code.';
+    } else {
+      const { accessToken, context } = await res.json();
+      sessionStorage.setItem('smart_access_token', accessToken);
+      sessionStorage.setItem('smart_context', JSON.stringify(context));
+      if (context.launchType === 'ehr') {
+        location.href = `/dashboard.html?smart_token=${accessToken}`;
+      } else {
+        const ledgerRes = await fetch(`/api/ledgers/by-patient/${context.patientId}`);
+        if (ledgerRes.ok) {
+          const ledger = await ledgerRes.json();
+          location.href = `/chat.html?ledger=${ledger.id}&smart_token=${accessToken}`;
+        } else {
+          statusEl.textContent = 'Signed in, but this patient has no active intake yet. Fire both trigger events from the Demo Control Panel first.';
+        }
+      }
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(~/.local/bin/node src/triggers/verify.js)",
+      "Bash(~/.local/bin/node src/server.js)",
+      "Bash(curl -s http://localhost:3000/api/patients)",
+      "Bash(curl -s -X POST http://localhost:3000/api/demo/trigger/appointment-scheduled -H 'Content-Type: application/json' -d '{\"patientId\":\"pat-001\",\"appointmentId\":\"appt-001\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/demo/trigger/financial-clearance -H 'Content-Type: application/json' -d '{\"patientId\":\"pat-001\",\"appointmentId\":\"appt-001\"}')",
+      "Bash(curl -s http://localhost:3000/api/ledgers)",
+      "Bash(curl -s -o /tmp/react_test.js -w \"%{http_code} %{size_download} %{content_type}\\\\n\" --max-time 20 \"https://esm.sh/react@18\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /tmp/htm_test.js -w \"%{http_code} %{size_download} %{content_type}\\\\n\" --max-time 20 \"https://esm.sh/htm@3\")",
+      "Bash(curl -s -o /tmp/tw_test.js -w \"%{http_code} %{size_download} %{content_type}\\\\n\" --max-time 20 \"https://cdn.tailwindcss.com\")",
+      "Bash(curl -sL -o /tmp/tw_test2.js -w \"%{http_code} %{size_download} %{content_type}\\\\n\" --max-time 20 \"https://cdn.tailwindcss.com\")",
+      "mcp__Claude_in_Chrome__computer",
+      "Bash(~/.local/bin/node src/fhir/verifyScopes.js)",
+      "Bash(curl -s -X POST http://localhost:3000/api/demo-phone/sms/pat-003/send -H 'Content-Type: application/json' -d '{\"text\":\"Pay your $20.00 copay: http://localhost:3000/chat.html?ledger=test123\"}')",
+      "Bash(curl -s http://localhost:3000/api/demo-phone/sms/pat-003)"
+    ]
+  }
+}

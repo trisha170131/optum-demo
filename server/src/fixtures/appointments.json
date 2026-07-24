@@ -1,0 +1,29 @@
+[
+  {
+    "resourceType": "Appointment",
+    "id": "appt-001",
+    "status": "booked",
+    "start": "2026-07-25T09:30:00-05:00",
+    "participant": [{ "actor": { "reference": "Patient/pat-001" } }],
+    "serviceType": [{ "text": "Annual Physical" }],
+    "feeScheduleAmountCents": 3000
+  },
+  {
+    "resourceType": "Appointment",
+    "id": "appt-002",
+    "status": "booked",
+    "start": "2026-07-25T11:00:00-05:00",
+    "participant": [{ "actor": { "reference": "Patient/pat-002" } }],
+    "serviceType": [{ "text": "Cardiology Consult" }],
+    "feeScheduleAmountCents": 5000
+  },
+  {
+    "resourceType": "Appointment",
+    "id": "appt-003",
+    "status": "booked",
+    "start": "2026-07-25T14:15:00-05:00",
+    "participant": [{ "actor": { "reference": "Patient/pat-003" } }],
+    "serviceType": [{ "text": "Follow-up Visit" }],
+    "feeScheduleAmountCents": 2000
+  }
+]

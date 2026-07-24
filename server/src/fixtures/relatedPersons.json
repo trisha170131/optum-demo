@@ -1,0 +1,26 @@
+[
+  {
+    "resourceType": "RelatedPerson",
+    "id": "rp-001",
+    "patient": { "reference": "Patient/pat-001" },
+    "name": [{ "text": "Luis Alvarez" }],
+    "relationship": [{ "text": "Spouse" }],
+    "telecom": [{ "system": "phone", "value": "555-201-0011" }]
+  },
+  {
+    "resourceType": "RelatedPerson",
+    "id": "rp-002",
+    "patient": { "reference": "Patient/pat-002" },
+    "name": [{ "text": "Grace Chen" }],
+    "relationship": [{ "text": "Sibling" }],
+    "telecom": [{ "system": "phone", "value": "555-201-0012" }]
+  },
+  {
+    "resourceType": "RelatedPerson",
+    "id": "rp-003",
+    "patient": { "reference": "Patient/pat-003" },
+    "name": [{ "text": "Ellen Klein" }],
+    "relationship": [{ "text": "Daughter" }],
+    "telecom": [{ "system": "phone", "value": "555-201-0013" }]
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "name": "intake-agent-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "verify-trigger": "node src/triggers/verify.js"
+  }
+}

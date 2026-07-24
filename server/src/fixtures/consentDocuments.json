@@ -1,0 +1,23 @@
+[
+  {
+    "key": "general_consent",
+    "title": "General Consent to Treat",
+    "version": "1.0",
+    "summary": "Gives your care team permission to examine and treat you during this visit.",
+    "body": "I agree to receive medical care and routine treatment from this practice's clinicians during this visit and any related follow-up care."
+  },
+  {
+    "key": "hipaa_ack",
+    "title": "HIPAA Privacy Acknowledgment",
+    "version": "1.0",
+    "summary": "Confirms you received our Notice of Privacy Practices explaining how your health information is used.",
+    "body": "I acknowledge that I have been offered a copy of this practice's Notice of Privacy Practices, which explains how my health information may be used and shared."
+  },
+  {
+    "key": "financial_responsibility",
+    "title": "Financial Responsibility Agreement",
+    "version": "1.0",
+    "summary": "Confirms you understand you're responsible for costs your insurance doesn't cover.",
+    "body": "I understand that I am responsible for any copay, deductible, or coinsurance amount not covered by my insurance plan, and agree to pay any outstanding balance after my insurer processes this visit."
+  }
+]
