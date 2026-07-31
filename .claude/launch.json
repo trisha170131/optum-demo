@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "intake-agent",
-      "runtimeExecutable": "/Users/trisha_shrivastava@optum.com/Library/Python/3.9/lib/python/site-packages/nodejs/bin/node",
-      "runtimeArgs": ["/Users/trisha_shrivastava@optum.com/Claude/server/src/server.js"],
-      "port": 3000
+      "runtimeExecutable": "/Users/trisha_shrivastava@optum.com/.local/bin/node",
+      "runtimeArgs": ["server/src/server.js"],
+      "port": 3000,
+      "autoPort": true
     }
   ]
 }

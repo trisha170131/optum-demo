@@ -17,7 +17,11 @@
       "Bash(curl -s -X POST http://localhost:3000/api/demo-phone/sms/pat-003/send -H 'Content-Type: application/json' -d '{\"text\":\"Pay your $20.00 copay: http://localhost:3000/chat.html?ledger=test123\"}')",
       "Bash(curl -s http://localhost:3000/api/demo-phone/sms/pat-003)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "mcp__claude-in-chrome__navigate",
+      "Bash(pkill -f \"node.*server.js\")",
+      "Bash(git checkout *)",
+      "Bash(git commit -m 'Fix patient intake flow: create missing useSSE hook, redirect landing page to demo panel *)"
     ]
   }
 }

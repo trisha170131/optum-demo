@@ -3,9 +3,8 @@ import { tokens } from '../tokens.js';
 
 function LandingPage() {
   const handlePatientClick = () => {
-    // Patient intake: can pass ledgerId via URL if returning, or start fresh
-    const ledgerId = new URLSearchParams(location.search).get('ledgerId');
-    location.href = ledgerId ? `/patient-intake.html?ledgerId=${ledgerId}` : '/patient-intake.html';
+    // Navigate to demo control panel to fire triggers and start intake
+    location.href = '/index.html';
   };
 
   const handleStaffClick = () => {
