@@ -3,281 +3,140 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff Dashboard - Patient Intake Manager</title>
+  <title>Staff Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body, button, input, textarea, select { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; }
   </style>
 </head>
-<body class="bg-[#f5f5f5]">
-  <div class="flex h-screen">
-    <!-- LEFT PANEL: Mock EHR -->
-    <div class="w-1/2 bg-white border-r border-[#e5e7eb] overflow-auto flex flex-col">
-      <!-- EHR Header -->
-      <div class="bg-[#003366] text-white px-6 py-4 sticky top-0 z-10">
-        <div class="flex items-center justify-between mb-3">
-          <h1 class="text-lg font-bold">Patient Worqueues</h1>
-          <button class="text-xs bg-[#005ea8] px-3 py-1 rounded hover:bg-[#004080]">Refresh</button>
+<body class="bg-[#f9f8f6]">
+  <div class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <div class="bg-white border-b border-[#e5e7eb] px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-[#1f2937]">Patient Registration</h1>
+          <p class="text-sm text-[#6b7280] mt-1">Logged in as: Jane Smith (Staff)</p>
+        </div>
+        <a href="/landing-intake.html" class="text-sm text-[#6b7280] hover:text-[#1f2937]">← Back to home</a>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 px-6 py-6">
+      <!-- Patient 1: SMS In Progress -->
+      <div class="bg-white rounded-lg border border-[#e5e7eb] overflow-hidden mb-6 hover:shadow-md transition">
+        <div class="p-4 hover:bg-[#f9f8f6] cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="font-bold text-[#1f2937]">Maria Alvarez</h3>
+              <p class="text-sm text-[#6b7280] mt-1">Annual Physical • Jul 25, 2:00 PM</p>
+
+              <div class="flex items-center gap-3 mt-2">
+                <span class="inline-flex items-center rounded-full bg-[#fef3c7] px-3 py-1 text-xs font-medium text-[#b45309]">
+                  ⏳ SMS in progress
+                </span>
+                <span class="text-xs text-[#6b7280]">2/6 done</span>
+              </div>
+
+              <div class="mt-2 flex items-center gap-2 w-full max-w-xs">
+                <div class="flex-1 h-1.5 bg-[#e5e7eb] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#ff9800]" style="width: 33%;"></div>
+                </div>
+                <span class="text-xs text-[#6b7280]">33%</span>
+              </div>
+
+              <div class="mt-3 text-xs text-[#6b7280]">
+                <p class="font-semibold text-[#1f2937] mb-1">Completed:</p>
+                <p>✓ Appointment (SMS) • ✓ Demographics (SMS)</p>
+              </div>
+            </div>
+            <div class="text-[#6b7280]">▶</div>
+          </div>
         </div>
       </div>
 
-      <!-- Patient List -->
-      <div class="px-6 py-4 flex-1">
-        <!-- Patient Card 1 -->
-        <div id="patient-1" class="bg-white border-2 border-[#d1d5db] rounded-lg p-4 mb-4 cursor-pointer hover:border-[#2563eb] transition">
-          <div class="flex items-center gap-4 mb-3">
-            <div class="w-12 h-12 bg-[#2563eb] text-white rounded-full flex items-center justify-center font-bold text-lg">MT</div>
+      <!-- Patient 2: Voice Attempted -->
+      <div class="bg-white rounded-lg border border-[#e5e7eb] overflow-hidden mb-6 hover:shadow-md transition">
+        <div class="p-4 hover:bg-[#f9f8f6] cursor-pointer">
+          <div class="flex items-start justify-between">
             <div>
-              <h3 class="font-bold text-[#003366]">Marcus J. Thornton</h3>
-              <p class="text-xs text-[#6b7280]">Sex: Male | DOB: 07/22/1968 (Age 57)</p>
-              <p class="text-xs text-[#6b7280]">MRN: MRN-847291</p>
-            </div>
-          </div>
+              <h3 class="font-bold text-[#1f2937]">James Chen</h3>
+              <p class="text-sm text-[#6b7280] mt-1">Cardiology Consult • Jul 25, 3:30 PM</p>
 
-          <div class="bg-[#f3f4f6] p-3 rounded text-xs space-y-2 mb-3">
-            <div><span class="font-semibold">Appointment:</span> Cardiology Consultation - Apr 18, 2026 2:30 PM</div>
-            <div><span class="font-semibold">Provider:</span> Dr. Sarah Kim, MD - Internal Medicine</div>
-            <div><span class="font-semibold">Location:</span> Cardiology Clinic</div>
-          </div>
+              <div class="flex items-center gap-3 mt-2">
+                <span class="inline-flex items-center rounded-full bg-[#dbeafe] px-3 py-1 text-xs font-medium text-[#1e40af]">
+                  ☎️ Voice attempted
+                </span>
+                <span class="text-xs text-[#6b7280]">4/6 done</span>
+              </div>
 
-          <div class="border-t border-[#e5e7eb] pt-3">
-            <p class="text-xs font-semibold text-[#6b7280] mb-2">AUTHORIZATION STATUS</p>
-            <div class="space-y-2 text-xs">
-              <div class="flex justify-between items-center">
-                <span>Coverage Authorization: Anthem BCBS</span>
-                <span class="bg-[#dbeafe] text-[#1e40af] px-2 py-1 rounded font-semibold">Pending</span>
+              <div class="mt-2 flex items-center gap-2 w-full max-w-xs">
+                <div class="flex-1 h-1.5 bg-[#e5e7eb] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#ff9800]" style="width: 67%;"></div>
+                </div>
+                <span class="text-xs text-[#6b7280]">67%</span>
               </div>
-              <div class="flex justify-between items-center">
-                <span>MRI Brain w/o Contrast</span>
-                <span class="bg-[#fef3c7] text-[#92400e] px-2 py-1 rounded font-semibold">Prior Auth</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span>Cardiac Catheterization</span>
-                <span class="bg-[#dcfce7] text-[#166534] px-2 py-1 rounded font-semibold">Approved</span>
+
+              <div class="mt-3 text-xs text-[#6b7280]">
+                <p class="font-semibold text-[#1f2937] mb-1">Completed:</p>
+                <p>✓ Appointment (SMS) • ✓ Demographics (SMS) • ✓ Insurance (Voice)</p>
               </div>
             </div>
+            <div class="text-[#6b7280]">▶</div>
           </div>
         </div>
+      </div>
 
-        <!-- Patient Card 2 -->
-        <div id="patient-2" class="bg-white border-2 border-[#d1d5db] rounded-lg p-4 mb-4 cursor-pointer hover:border-[#2563eb] transition">
-          <div class="flex items-center gap-4 mb-3">
-            <div class="w-12 h-12 bg-[#059669] text-white rounded-full flex items-center justify-center font-bold text-lg">JC</div>
+      <!-- Patient 3: Not Started -->
+      <div class="bg-white rounded-lg border border-[#e5e7eb] overflow-hidden hover:shadow-md transition">
+        <div class="p-4 hover:bg-[#f9f8f6] cursor-pointer">
+          <div class="flex items-start justify-between">
             <div>
-              <h3 class="font-bold text-[#003366]">James Chen</h3>
-              <p class="text-xs text-[#6b7280]">Sex: Male | DOB: 11/02/1990 (Age 35)</p>
-              <p class="text-xs text-[#6b7280]">MRN: MRN-892145</p>
-            </div>
-          </div>
+              <h3 class="font-bold text-[#1f2937]">Robert Klein</h3>
+              <p class="text-sm text-[#6b7280] mt-1">Follow-up Visit • Jul 26, 12:45 AM</p>
 
-          <div class="bg-[#f3f4f6] p-3 rounded text-xs space-y-2 mb-3">
-            <div><span class="font-semibold">Appointment:</span> Annual Physical - Apr 19, 2026 10:00 AM</div>
-            <div><span class="font-semibold">Provider:</span> Dr. Robert Martinez, MD</div>
-            <div><span class="font-semibold">Location:</span> Primary Care Clinic</div>
-          </div>
-
-          <div class="border-t border-[#e5e7eb] pt-3">
-            <p class="text-xs font-semibold text-[#6b7280] mb-2">AUTHORIZATION STATUS</p>
-            <div class="space-y-2 text-xs">
-              <div class="flex justify-between items-center">
-                <span>Coverage Authorization: United Healthcare</span>
-                <span class="bg-[#dcfce7] text-[#166534] px-2 py-1 rounded font-semibold">Approved</span>
+              <div class="flex items-center gap-3 mt-2">
+                <span class="inline-flex items-center rounded-full bg-[#f3f4f6] px-3 py-1 text-xs font-medium text-[#6b7280]">
+                  ⏸️ Not started
+                </span>
+                <span class="text-xs text-[#6b7280]">0/6 done</span>
               </div>
-              <div class="flex justify-between items-center">
-                <span>Lab Work</span>
-                <span class="bg-[#dcfce7] text-[#166534] px-2 py-1 rounded font-semibold">Approved</span>
+
+              <div class="mt-2 flex items-center gap-2 w-full max-w-xs">
+                <div class="flex-1 h-1.5 bg-[#e5e7eb] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#e5e7eb]" style="width: 0%;"></div>
+                </div>
+                <span class="text-xs text-[#6b7280]">0%</span>
+              </div>
+
+              <div class="mt-3">
+                <p class="text-xs text-[#6b7280] font-semibold">No steps completed yet</p>
               </div>
             </div>
+            <div class="text-[#6b7280]">▶</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT PANEL: Staff Dashboard App (SMART on FHIR) -->
-    <div class="w-1/2 bg-[#f9fafb] border-l border-[#e5e7eb] flex flex-col">
-      <!-- App Header -->
-      <div class="bg-white border-b border-[#e5e7eb] px-6 py-4 sticky top-0 z-10">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="text-lg font-bold text-[#1f2937]">Patient Intake Manager</h2>
-          <span class="text-xs bg-[#ecfdf5] text-[#065f46] px-3 py-1 rounded-full font-semibold">SMART on FHIR App</span>
+    <!-- Summary -->
+    <div class="border-t border-[#e5e7eb] bg-white px-6 py-4">
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div>
+          <p class="text-2xl font-bold text-[#ff9800]">1</p>
+          <p class="text-xs text-[#6b7280] mt-1">In Progress</p>
         </div>
-        <p class="text-xs text-[#6b7280]">Real-time appointment registration & intake tracking</p>
-      </div>
-
-      <!-- App Content -->
-      <div id="appContent" class="flex-1 overflow-auto p-6">
-        <!-- Patient 1 Content -->
-        <div class="bg-white rounded-lg border border-[#e5e7eb] p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="text-lg font-bold text-[#1f2937]">Marcus J. Thornton</h3>
-              <p class="text-sm text-[#6b7280]">MRN: MRN-847291 • Age 57</p>
-            </div>
-            <div class="text-right">
-              <span class="inline-block bg-[#fef3c7] text-[#92400e] px-3 py-1 rounded-full text-xs font-semibold">Pending Intake</span>
-            </div>
-          </div>
-
-          <div class="border-t border-[#e5e7eb] pt-4 mb-4">
-            <h4 class="text-sm font-semibold text-[#1f2937] mb-3">Pre-Appointment Registration</h4>
-            <div class="space-y-3">
-              <!-- Step 1 -->
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#dcfce7] text-[#166534] rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#1f2937]">Identity Verification</p>
-                  <p class="text-xs text-[#6b7280]">Confirmed via SMS • 2:15 PM</p>
-                </div>
-              </div>
-
-              <!-- Step 2 -->
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#dbeafe] text-[#1e40af] rounded-full flex items-center justify-center text-sm font-bold">2</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#1f2937]">Insurance Verification</p>
-                  <p class="text-xs text-[#6b7280]">In progress • SMS channel</p>
-                </div>
-              </div>
-
-              <!-- Step 3 -->
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#f3f4f6] text-[#9ca3af] rounded-full flex items-center justify-center text-sm font-bold">3</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#6b7280]">Demographics Confirmation</p>
-                  <p class="text-xs text-[#9ca3af]">Pending</p>
-                </div>
-              </div>
-
-              <!-- Step 4 -->
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#f3f4f6] text-[#9ca3af] rounded-full flex items-center justify-center text-sm font-bold">4</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#6b7280]">Consent & HIPAA</p>
-                  <p class="text-xs text-[#9ca3af]">Pending</p>
-                </div>
-              </div>
-
-              <!-- Step 5 -->
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#f3f4f6] text-[#9ca3af] rounded-full flex items-center justify-center text-sm font-bold">5</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#6b7280]">Copay & Payment</p>
-                  <p class="text-xs text-[#9ca3af]">Pending</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="border-t border-[#e5e7eb] pt-4">
-            <div class="flex items-center justify-between mb-2">
-              <p class="text-xs font-semibold text-[#6b7280]">Overall Progress</p>
-              <p class="text-xs font-semibold text-[#1f2937]">1 of 5 steps (20%)</p>
-            </div>
-            <div class="w-full h-2 bg-[#e5e7eb] rounded-full overflow-hidden">
-              <div class="h-full bg-[#ff9800] transition-all" style="width: 20%;"></div>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="border-t border-[#e5e7eb] pt-4 mt-4 flex gap-2">
-            <button class="flex-1 bg-[#2563eb] text-white text-sm font-semibold py-2 rounded hover:bg-[#1d4ed8] transition">
-              View SMS History
-            </button>
-            <button class="flex-1 bg-[#f3f4f6] text-[#1f2937] text-sm font-semibold py-2 rounded hover:bg-[#e5e7eb] transition">
-              Send Reminder
-            </button>
-          </div>
+        <div>
+          <p class="text-2xl font-bold text-[#3b82f6]">1</p>
+          <p class="text-xs text-[#6b7280] mt-1">Voice Attempted</p>
         </div>
-
-        <!-- Patient 2 Content (Hidden) -->
-        <div id="patient-2-content" class="bg-white rounded-lg border border-[#e5e7eb] p-6 hidden">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="text-lg font-bold text-[#1f2937]">James Chen</h3>
-              <p class="text-sm text-[#6b7280]">MRN: MRN-892145 • Age 35</p>
-            </div>
-            <div class="text-right">
-              <span class="inline-block bg-[#dcfce7] text-[#166534] px-3 py-1 rounded-full text-xs font-semibold">Intake Complete</span>
-            </div>
-          </div>
-
-          <div class="border-t border-[#e5e7eb] pt-4 mb-4">
-            <h4 class="text-sm font-semibold text-[#1f2937] mb-3">Pre-Appointment Registration</h4>
-            <div class="space-y-3">
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#dcfce7] text-[#166534] rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#1f2937]">Identity Verification</p>
-                  <p class="text-xs text-[#6b7280]">Confirmed via SMS • 2:45 PM</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#dcfce7] text-[#166534] rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#1f2937]">Insurance Verification</p>
-                  <p class="text-xs text-[#6b7280]">Confirmed • United Healthcare Active</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#dcfce7] text-[#166534] rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#1f2937]">Demographics Confirmation</p>
-                  <p class="text-xs text-[#6b7280]">Confirmed • 2 Main St, Springfield IL</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#dcfce7] text-[#166534] rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#1f2937]">Consent & HIPAA</p>
-                  <p class="text-xs text-[#6b7280]">Signed • 3:10 PM</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-6 h-6 bg-[#dcfce7] text-[#166534] rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-[#1f2937]">Copay & Payment</p>
-                  <p class="text-xs text-[#6b7280]">Copay $30 - Ready for check-in</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="border-t border-[#e5e7eb] pt-4">
-            <div class="flex items-center justify-between mb-2">
-              <p class="text-xs font-semibold text-[#6b7280]">Overall Progress</p>
-              <p class="text-xs font-semibold text-[#1f2937]">5 of 5 steps (100%)</p>
-            </div>
-            <div class="w-full h-2 bg-[#e5e7eb] rounded-full overflow-hidden">
-              <div class="h-full bg-[#059669] transition-all" style="width: 100%;"></div>
-            </div>
-          </div>
-
-          <!-- Status Badge -->
-          <div class="border-t border-[#e5e7eb] pt-4 mt-4 bg-[#ecfdf5] border-l-4 border-[#10b981] p-3 rounded">
-            <p class="text-sm font-semibold text-[#065f46]">✓ Patient Ready for Check-In</p>
-            <p class="text-xs text-[#047857] mt-1">All pre-appointment registration steps completed. Patient may proceed to front desk.</p>
-          </div>
+        <div>
+          <p class="text-2xl font-bold text-[#6b7280]">1</p>
+          <p class="text-xs text-[#6b7280] mt-1">Not Started</p>
         </div>
       </div>
     </div>
   </div>
-
-  <script>
-    // Patient selection
-    document.getElementById('patient-1').addEventListener('click', function() {
-      document.querySelectorAll('[id^="patient-"][id$="-content"]').forEach(el => el.classList.add('hidden'));
-      document.getElementById('appContent').innerHTML = document.getElementById('appContent').innerHTML;
-      document.getElementById('patient-1').classList.add('border-[#2563eb]');
-      document.getElementById('patient-2').classList.remove('border-[#2563eb]');
-    });
-
-    document.getElementById('patient-2').addEventListener('click', function() {
-      document.getElementById('appContent').innerHTML = document.getElementById('patient-2-content').innerHTML;
-      document.getElementById('patient-1').classList.remove('border-[#2563eb]');
-      document.getElementById('patient-2').classList.add('border-[#2563eb]');
-    });
-  </script>
 </body>
 </html>
