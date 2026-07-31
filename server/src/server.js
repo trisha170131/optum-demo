@@ -7,6 +7,7 @@ import { TaskLedgerService } from './ledger/TaskLedgerService.js';
 import { TriggerListener } from './triggers/TriggerListener.js';
 import { registerApiRoutes } from './routes/api.js';
 import { registerSmartRoutes } from './routes/smart.js';
+import { registerSMSAgentRoutes } from './routes/sms-agent.js';
 import { startPriorAuthAgent } from './agent-interop/priorAuthAgent.js';
 import { wireAgentResponsesToLedger } from './agent-interop/priorAuthResponseHandler.js';
 
@@ -27,6 +28,7 @@ wireAgentResponsesToLedger(ledgerService);
 const router = createRouter();
 registerApiRoutes(router, { ledgerService });
 registerSmartRoutes(router);
+registerSMSAgentRoutes(router, { ledgerService });
 
 const server = createServer(async (req, res) => {
   const handled = await router.dispatch(req, res);
