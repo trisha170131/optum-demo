@@ -41,15 +41,18 @@ async function callClaudeAPI(systemPrompt, userMessage, stepKey) {
 
 // Mock response generator for demo mode
 function generateMockResponse(userMessage, stepKey) {
-  const mockResponses = {
-    identity_confirm: "Thank you for confirming your identity. We have verified your last name and date of birth.",
-    insurance: "Thank you for confirming your insurance coverage. Your Blue Cross Blue Shield plan is active in our system.",
-    demographics: "Thank you. We have confirmed all your contact information and demographics are current.",
-    consent: "Thank you for reviewing and confirming the consent forms and privacy practices.",
+  // Professional opening questions for each intake step
+  const stepQuestions = {
+    identity_confirm: "Thank you for confirming your identity. We have verified your information.",
+    insurance_card: "Can you confirm that your primary insurance is still with the same provider as last time, or has it changed?",
+    coverage_update: "Thank you. Now let's verify your insurance coverage details. Can you please confirm the name of your insurance company?",
+    demographics: "Can you please confirm that your current mailing address is still the same as we have on file?",
+    consent: "Have you had the opportunity to review our consent forms and privacy practices? Please reply 'yes' to confirm.",
+    copay: "Your estimated copay for this visit is $30. Can you confirm you're able to pay that at check-in?",
     copay_display: "Your estimated copay for this visit is $30. Payment can be made now or at check-in.",
   };
 
-  return mockResponses[stepKey] || "Thank you for that information.";
+  return stepQuestions[stepKey] || "Thank you for that information.";
 }
 
 const INTAKE_STEPS = [
@@ -125,6 +128,8 @@ export class SMSAgent {
         aiResponse
       );
 
+      let finalResponse = aiResponse;
+
       if (intent.isComplete) {
         this.ledgerService.updateTask(
           ledgerId,
@@ -140,9 +145,17 @@ export class SMSAgent {
       const updatedLedger = this.ledgerService.getLedger(ledgerId);
       const nextStep = this._findNextPendingStep(updatedLedger);
 
+      // If step was completed and there's a next pending step, generate the next question
+      if (intent.isComplete && nextStep) {
+        const nextSystemPrompt = await this._buildSystemPrompt(updatedLedger, nextStep);
+        // Ask Claude to generate the opening question for this step, as if starting fresh
+        const nextStepPrompt = `You are about to start a new intake step. Generate a single, warm, professional SMS-style question to ask the patient about their ${nextStep.key.replace(/_/g, ' ')}. Keep it brief (1-3 short sentences), no emoji, no exclamation stacking. Use plain language. Do NOT repeat information already confirmed.`;
+        finalResponse = await callClaudeAPI(nextSystemPrompt, nextStepPrompt, nextStep.key);
+      }
+
       // Build response message
       const responseMessage = this._buildResponseMessage(
-        aiResponse,
+        finalResponse,
         nextStep
       );
 

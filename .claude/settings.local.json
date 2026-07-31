@@ -26,7 +26,10 @@
       "Bash(git commit -m 'Build HTML-only patient intake flows: SMS, Voice, Kiosk, Staff Dashboard *)",
       "Bash(git commit -m 'Build SMS AI Agent with Claude API integration *)",
       "Bash(git commit -m 'Integrate professional healthcare intake system prompt into SMS Agent *)",
-      "Bash(git commit -m 'Update local settings to track recent commits *)"
+      "Bash(git commit -m 'Update local settings to track recent commits *)",
+      "Bash(jq '. + { *)",
+      "Bash(mv /tmp/ledgers_updated.json /Users/trisha_shrivastava@optum.com/Claude/server/src/data/ledgers.json)",
+      "Bash(pkill -f \"node.*server\")"
     ]
   }
 }
