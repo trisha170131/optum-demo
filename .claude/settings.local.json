@@ -15,7 +15,9 @@
       "mcp__Claude_in_Chrome__computer",
       "Bash(~/.local/bin/node src/fhir/verifyScopes.js)",
       "Bash(curl -s -X POST http://localhost:3000/api/demo-phone/sms/pat-003/send -H 'Content-Type: application/json' -d '{\"text\":\"Pay your $20.00 copay: http://localhost:3000/chat.html?ledger=test123\"}')",
-      "Bash(curl -s http://localhost:3000/api/demo-phone/sms/pat-003)"
+      "Bash(curl -s http://localhost:3000/api/demo-phone/sms/pat-003)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

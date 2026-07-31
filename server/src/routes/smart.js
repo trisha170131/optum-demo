@@ -43,8 +43,9 @@ export function registerSmartRoutes(router) {
       patientId: query.patientId ?? 'pat-001',
       appointmentId: query.appointmentId ?? 'appt-001',
       launchType: 'ehr',
+      nextPage: 'ehr.html',
     });
-    sendRedirect(res, `/mock-auth/authorize?${params}&nextPage=ehr.html`);
+    sendRedirect(res, `/mock-auth/authorize?${params}`);
   });
 
   // Mock authorization endpoint — auto-"approves" instead of showing a real Epic login/consent

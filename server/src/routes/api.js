@@ -205,6 +205,46 @@ export function registerApiRoutes(router, { ledgerService }) {
     sendJson(res, 200, mockVoiceAdapter.advanceCall(params.patientId, input));
   });
 
+  // ---- AI Chat endpoint (new patient view) -----------------------------------
+  router.post('/api/ledgers/:id/chat', async (req, res, { params }) => {
+    const { taskKey, message } = await readJsonBody(req);
+    const ledger = ledgerService.getLedger(params.id);
+    if (!ledger) return sendJson(res, 404, { error: 'ledger not found' });
+
+    const task = ledger.tasks.find((t) => t.key === taskKey);
+    if (!task) return sendJson(res, 404, { error: 'task not found' });
+
+    // Generate a mock AI response based on the task type
+    let aiResponse = '';
+    switch (taskKey) {
+      case TASK_KEYS.DEMOGRAPHICS:
+        aiResponse = '✓ Got it! Your information is updated. Ready for the next step?';
+        // Mark task as done
+        ledgerService.updateTask(params.id, taskKey, { status: 'done' }, 'patient', 'chat', 'confirmed_demographics');
+        break;
+      case TASK_KEYS.INSURANCE_CARD:
+        aiResponse = '✓ Thank you for providing your insurance info. Moving to the next step...';
+        ledgerService.updateTask(params.id, taskKey, { status: 'done' }, 'patient', 'chat', 'confirmed_insurance_card');
+        break;
+      case TASK_KEYS.CONSENT:
+        aiResponse = '✓ Thank you for reviewing and signing the consent forms.';
+        ledgerService.updateTask(params.id, taskKey, { status: 'done' }, 'patient', 'chat', 'signed_consents');
+        break;
+      case TASK_KEYS.COPAY:
+        aiResponse = '✓ Your payment has been processed. You\'re all set!';
+        ledgerService.updateTask(params.id, taskKey, { status: 'done' }, 'patient', 'chat', 'paid_copay');
+        break;
+      default:
+        aiResponse = 'Thank you for your response. Next question coming up...';
+    }
+
+    const updatedLedger = ledgerService.getLedger(params.id);
+    sendJson(res, 200, {
+      aiResponse,
+      ledger: enrichLedger(updatedLedger, internalFhirClient),
+    });
+  });
+
   // ---- Agent interop debug view -----------------------------------------------
   router.get('/api/agent-tasks', async (req, res) => {
     sendJson(res, 200, { tasks: listTaskRequests() });

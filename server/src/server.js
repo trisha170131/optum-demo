@@ -31,7 +31,15 @@ registerSmartRoutes(router);
 const server = createServer(async (req, res) => {
   const handled = await router.dispatch(req, res);
   if (handled) return;
-  const pathname = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  let pathname = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+
+  // Redirect root to landing page
+  if (pathname === '/' || pathname === '') {
+    res.writeHead(302, { Location: '/landing.html' });
+    res.end();
+    return;
+  }
+
   if (pathname.startsWith('/shared/')) {
     await serveStatic(res, sharedRoot, pathname.replace(/^\/shared/, ''));
   } else {
