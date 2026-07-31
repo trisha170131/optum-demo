@@ -35,7 +35,7 @@ const server = createServer(async (req, res) => {
 
   // Redirect root to landing page
   if (pathname === '/' || pathname === '') {
-    res.writeHead(302, { Location: '/landing.html' });
+    res.writeHead(302, { Location: '/landing-intake.html' });
     res.end();
     return;
   }

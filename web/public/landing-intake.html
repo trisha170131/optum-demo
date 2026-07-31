@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Intake</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body, button, input, textarea, select { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; }
+  </style>
+</head>
+<body class="bg-[#f9f8f6] min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-2xl px-4">
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <div class="inline-block mb-6 text-5xl font-bold text-[#ff9800]">
+        ◆
+      </div>
+      <h1 class="text-3xl font-bold text-[#1f2937] mb-2">Patient Intake</h1>
+      <p class="text-[#6b7280]">Choose your check-in method</p>
+    </div>
+
+    <!-- Options -->
+    <div class="space-y-4">
+      <!-- SMS Option -->
+      <a href="/sms-intake.html" class="block">
+        <div class="w-full p-6 bg-white border-2 border-[#ff9800] rounded-lg hover:bg-[#fff8f0] transition text-left group cursor-pointer">
+          <div class="flex gap-4 items-start">
+            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+              <svg class="w-8 h-8 text-[#ff9800]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="2" y="4" width="12" height="10" stroke-width="1.5" rx="1"/>
+                <path d="M2 5L8 10L14 5" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-lg font-bold text-[#1f2937] group-hover:text-[#ff9800]">SMS Texting</h2>
+              <p class="text-sm text-[#6b7280] mt-1">2-Way AI Conversational Texting</p>
+              <p class="text-sm text-[#6b7280] mt-2">AI sends first SMS, patient replies, one step at a time →</p>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Voice Option -->
+      <a href="/voice-intake.html" class="block">
+        <div class="w-full p-6 bg-white border-2 border-[#ff9800] rounded-lg hover:bg-[#fff8f0] transition text-left group cursor-pointer">
+          <div class="flex gap-4 items-start">
+            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+              <svg class="w-8 h-8 text-[#ff9800]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="4" y="2" width="8" height="12" stroke-width="1.5" rx="1"/>
+                <circle cx="8" cy="16" r="1" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-lg font-bold text-[#1f2937] group-hover:text-[#ff9800]">Voice AI Call</h2>
+              <p class="text-sm text-[#6b7280] mt-1">Conversational Voice Outreach</p>
+              <p class="text-sm text-[#6b7280] mt-2">AI places call, skips steps already done in SMS →</p>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Kiosk Option -->
+      <a href="/kiosk-intake.html" class="block">
+        <div class="w-full p-6 bg-white border-2 border-[#ff9800] rounded-lg hover:bg-[#fff8f0] transition text-left group cursor-pointer">
+          <div class="flex gap-4 items-start">
+            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+              <svg class="w-8 h-8 text-[#ff9800]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="2" y="2" width="12" height="15" stroke-width="1.5" rx="1"/>
+                <rect x="4" y="4" width="8" height="9" stroke-width="1"/>
+                <circle cx="8" cy="16" r="0.75" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-lg font-bold text-[#1f2937] group-hover:text-[#ff9800]">iPad Kiosk Check-In</h2>
+              <p class="text-sm text-[#6b7280] mt-1">In-Office Fallback (Touch-First)</p>
+              <p class="text-sm text-[#6b7280] mt-2">Patient arrives, taps "Check In", completes remaining steps →</p>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Staff Option -->
+      <a href="/staff-dashboard.html" class="block">
+        <div class="w-full p-6 bg-white border-2 border-[#ff9800] rounded-lg hover:bg-[#fff8f0] transition text-left group cursor-pointer">
+          <div class="flex gap-4 items-start">
+            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+              <svg class="w-8 h-8 text-[#ff9800]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="8" cy="6" r="2" stroke-width="1.5"/>
+                <path d="M4 10c0-1 2-2 4-2s4 1 4 2v3H4v-3z" stroke-width="1.5" fill="none"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h2 class="text-lg font-bold text-[#1f2937] group-hover:text-[#ff9800]">Staff Dashboard</h2>
+              <p class="text-sm text-[#6b7280] mt-1">Front Desk Registration View</p>
+              <p class="text-sm text-[#6b7280] mt-2">See all patient intakes, statuses, audit trail →</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-12 text-xs text-[#9ca3af]">
+      <p>All channels share the same intake record</p>
+      <p>Complete step 1 in SMS → Voice & Kiosk skip it</p>
+    </div>
+  </div>
+</body>
+</html>

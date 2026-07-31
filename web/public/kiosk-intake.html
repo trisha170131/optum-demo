@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kiosk Check-In</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body, button, input, textarea, select { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; }
+  </style>
+</head>
+<body class="bg-[#f9f8f6]">
+  <div class="flex flex-col h-screen max-w-2xl mx-auto bg-white">
+    <!-- Header -->
+    <div class="bg-[#ff9800] text-white px-6 py-6 text-center">
+      <h1 class="text-3xl font-bold mb-2">Welcome, Maria! 👋</h1>
+      <p class="text-lg opacity-90">Let's finish your check-in</p>
+    </div>
+
+    <!-- Back button -->
+    <div class="px-6 py-4 border-b border-[#e5e7eb]">
+      <a href="/landing-intake.html" class="text-sm text-[#6b7280] hover:text-[#1f2937]">← Back to menu</a>
+    </div>
+
+    <!-- Smart display info -->
+    <div class="mx-6 my-6 p-4 bg-[#fffbeb] border-2 border-[#fbbf24] rounded-lg">
+      <p class="text-sm font-semibold text-[#b45309]">💡 Smart Display</p>
+      <p class="text-sm text-[#6b7280] mt-2">Only showing steps you haven't completed in SMS or Voice</p>
+    </div>
+
+    <!-- Main content -->
+    <div class="flex-1 overflow-auto px-6 pb-6">
+      <!-- Step to complete -->
+      <div class="bg-[#e0e7ff] border-2 border-[#6366f1] rounded-lg p-6 mb-6">
+        <p class="text-xl font-bold text-[#1e1b4b] mb-2">📄 Step 4: Upload Insurance Card</p>
+        <p class="text-[#4f46e5] mb-4">Take a photo with the iPad camera</p>
+        <p class="text-sm text-[#4f46e5]">Front and back of your insurance card</p>
+      </div>
+
+      <!-- Large tap buttons for iPad -->
+      <div class="space-y-4 mb-6">
+        <button class="w-full p-6 bg-[#10b981] text-white rounded-lg text-xl font-bold hover:bg-[#059669] transition">
+          📷 Take Photo
+        </button>
+
+        <button class="w-full p-6 bg-[#6b7280] text-white rounded-lg text-xl font-bold hover:bg-[#4b5563] transition">
+          ❓ I Need Help
+        </button>
+      </div>
+
+      <!-- Progress -->
+      <div class="bg-[#dbeafe] p-4 rounded-lg mb-6">
+        <p class="text-sm font-semibold text-[#1e40af]">Progress: 5 of 6 steps</p>
+        <p class="text-xs text-[#1e40af] mt-2">✓ Appointment | ✓ Demographics | ✓ Insurance | ✗ Consent | ✗ Copay</p>
+      </div>
+
+      <!-- Remaining steps preview -->
+      <div class="text-sm text-[#6b7280]">
+        <p class="font-semibold text-[#1f2937] mb-2">Remaining Steps:</p>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-[#ff9800]">4.</span>
+            <span>Upload insurance card photo</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#ff9800]">5.</span>
+            <span>Review & sign consent forms</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-[#ff9800]">6.</span>
+            <span>Confirm copay payment method</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer note -->
+    <div class="border-t border-[#e5e7eb] px-6 py-4 bg-[#f9f8f6] text-center text-xs text-[#6b7280]">
+      Tap "I Need Help" at any time to speak with staff
+    </div>
+  </div>
+</body>
+</html>

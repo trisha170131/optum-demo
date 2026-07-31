@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Intake</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body, button, input, textarea, select { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; }
+    @keyframes pulse-wave {
+      0%, 100% { height: 10px; opacity: 0.5; }
+      50% { height: 30px; opacity: 1; }
+    }
+    .wave-bar { animation: pulse-wave 0.6s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-[#f9f8f6]">
+  <div class="flex flex-col h-screen max-w-md mx-auto bg-white">
+    <!-- Header -->
+    <div class="bg-white border-b border-[#e5e7eb] px-4 py-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-lg font-bold text-[#1f2937]">Voice Call</h1>
+        <a href="/landing-intake.html" class="text-xs text-[#6b7280] hover:text-[#1f2937]">← Back</a>
+      </div>
+      <p class="text-sm text-[#6b7280] mt-2">Maria Alvarez</p>
+    </div>
+
+    <!-- Call UI -->
+    <div class="flex-1 flex flex-col items-center justify-center px-4">
+      <!-- Avatar -->
+      <div class="w-24 h-24 rounded-full bg-[#10b981] flex items-center justify-center mb-6">
+        <span class="text-4xl">👤</span>
+      </div>
+
+      <!-- Name & Status -->
+      <h2 class="text-2xl font-bold text-[#1f2937]">Maria Alvarez</h2>
+      <p class="text-[#6b7280] mt-2">Call in progress • 2:15</p>
+
+      <!-- Waveform -->
+      <div class="flex items-center justify-center gap-1 h-16 my-8">
+        <div class="wave-bar w-1 bg-[#3b82f6]" style="animation-delay: 0s;"></div>
+        <div class="wave-bar w-1 bg-[#3b82f6]" style="animation-delay: 0.1s;"></div>
+        <div class="wave-bar w-1 bg-[#3b82f6]" style="animation-delay: 0.2s;"></div>
+        <div class="wave-bar w-1 bg-[#3b82f6]" style="animation-delay: 0.3s;"></div>
+        <div class="wave-bar w-1 bg-[#3b82f6]" style="animation-delay: 0.4s;"></div>
+      </div>
+
+      <!-- Transcript box -->
+      <div class="w-full bg-[#f9f8f6] p-4 rounded-lg mb-6 text-sm text-[#6b7280] max-h-32 overflow-auto">
+        <p class="font-bold text-[#1f2937] mb-2">📝 Transcript</p>
+        <p class="mb-3"><span class="font-semibold text-[#1f2937]">Agent:</span> "Your appointment confirmation from SMS is already saved. Let me ask about your insurance..."</p>
+        <p class="mb-3"><span class="font-semibold text-[#1f2937]">Maria:</span> "Yeah, I have a new plan now. It's Aetna."</p>
+        <p><span class="font-semibold text-[#1f2937]">Agent:</span> "Got it! Can you text me a photo of your card..."</p>
+      </div>
+
+      <!-- Info box -->
+      <div class="w-full bg-[#ecfdf5] border border-[#10b981] p-4 rounded-lg mb-6 text-xs">
+        <p class="text-[#065f46] font-semibold">✨ Smart Escalation</p>
+        <p class="text-[#047857] mt-1">Voice skipped appointment confirmation—already done in SMS</p>
+      </div>
+
+      <!-- Progress -->
+      <div class="w-full bg-[#dbeafe] p-3 rounded-lg text-xs text-[#1e40af]">
+        <p class="font-semibold">Progress: 3 of 6 steps</p>
+        <p class="mt-1">✓ Appointment | ✓ Demographics | ✗ Insurance Card</p>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="border-t border-[#e5e7eb] px-4 py-4 flex gap-4 justify-center">
+      <button class="w-14 h-14 rounded-full bg-[#ef4444] hover:bg-[#dc2626] flex items-center justify-center">
+        <span class="text-white text-xl">📞</span>
+      </button>
+      <button class="w-14 h-14 rounded-full bg-[#10b981] hover:bg-[#059669] flex items-center justify-center">
+        <span class="text-white text-xl">🔇</span>
+      </button>
+    </div>
+  </div>
+</body>
+</html>
