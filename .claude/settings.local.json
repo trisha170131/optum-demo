@@ -29,7 +29,8 @@
       "Bash(git commit -m 'Update local settings to track recent commits *)",
       "Bash(jq '. + { *)",
       "Bash(mv /tmp/ledgers_updated.json /Users/trisha_shrivastava@optum.com/Claude/server/src/data/ledgers.json)",
-      "Bash(pkill -f \"node.*server\")"
+      "Bash(pkill -f \"node.*server\")",
+      "Bash(mv /tmp/ledgers_fresh.json /Users/trisha_shrivastava@optum.com/Claude/server/src/data/ledgers.json)"
     ]
   }
 }
