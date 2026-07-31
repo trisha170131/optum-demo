@@ -24,7 +24,9 @@
       "Bash(git commit -m 'Fix patient intake flow: create missing useSSE hook, redirect landing page to demo panel *)",
       "mcp__visualize__show_widget",
       "Bash(git commit -m 'Build HTML-only patient intake flows: SMS, Voice, Kiosk, Staff Dashboard *)",
-      "Bash(git commit -m 'Build SMS AI Agent with Claude API integration *)"
+      "Bash(git commit -m 'Build SMS AI Agent with Claude API integration *)",
+      "Bash(git commit -m 'Integrate professional healthcare intake system prompt into SMS Agent *)",
+      "Bash(git commit -m 'Update local settings to track recent commits *)"
     ]
   }
 }
