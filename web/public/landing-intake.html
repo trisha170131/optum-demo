@@ -23,7 +23,7 @@
     <!-- Options -->
     <div class="space-y-4">
       <!-- SMS Option -->
-      <a href="/sms-intake.html" class="block">
+      <button onclick="goToSMSIntake()" class="w-full text-left">
         <div class="w-full p-6 bg-white border-2 border-[#ff9800] rounded-lg hover:bg-[#fff8f0] transition text-left group cursor-pointer">
           <div class="flex gap-4 items-start">
             <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
@@ -39,10 +39,10 @@
             </div>
           </div>
         </div>
-      </a>
+      </button>
 
       <!-- Voice Option -->
-      <a href="/voice-intake.html" class="block">
+      <button onclick="goToVoiceIntake()" class="w-full text-left">
         <div class="w-full p-6 bg-white border-2 border-[#ff9800] rounded-lg hover:bg-[#fff8f0] transition text-left group cursor-pointer">
           <div class="flex gap-4 items-start">
             <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
@@ -58,10 +58,10 @@
             </div>
           </div>
         </div>
-      </a>
+      </button>
 
       <!-- Kiosk Option -->
-      <a href="/kiosk-intake.html" class="block">
+      <button onclick="goToKioskIntake()" class="w-full text-left">
         <div class="w-full p-6 bg-white border-2 border-[#ff9800] rounded-lg hover:bg-[#fff8f0] transition text-left group cursor-pointer">
           <div class="flex gap-4 items-start">
             <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
@@ -78,7 +78,7 @@
             </div>
           </div>
         </div>
-      </a>
+      </button>
 
       <!-- Staff Option -->
       <a href="/staff-dashboard.html" class="block">
@@ -106,5 +106,53 @@
       <p>Complete step 1 in SMS → Voice & Kiosk skip it</p>
     </div>
   </div>
+
+  <script>
+    async function getFirstPatientLedger() {
+      try {
+        const response = await fetch('/api/patients');
+        const data = await response.json();
+        const patients = data.patients || [];
+        if (patients.length > 0) {
+          const patientId = patients[0].id;
+          const ledgerResponse = await fetch(`/api/ledgers/by-patient/${patientId}`);
+          const ledger = await ledgerResponse.json();
+          if (ledger && ledger.id) {
+            return ledger.id;
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching patient ledger:', err);
+      }
+      return null;
+    }
+
+    async function goToSMSIntake() {
+      const ledgerId = await getFirstPatientLedger();
+      if (ledgerId) {
+        window.location.href = `/sms-intake.html?ledgerId=${ledgerId}`;
+      } else {
+        alert('No patients available. Please try again.');
+      }
+    }
+
+    async function goToVoiceIntake() {
+      const ledgerId = await getFirstPatientLedger();
+      if (ledgerId) {
+        window.location.href = `/voice-intake.html?ledgerId=${ledgerId}`;
+      } else {
+        alert('No patients available. Please try again.');
+      }
+    }
+
+    async function goToKioskIntake() {
+      const ledgerId = await getFirstPatientLedger();
+      if (ledgerId) {
+        window.location.href = `/kiosk-intake.html?ledgerId=${ledgerId}`;
+      } else {
+        alert('No patients available. Please try again.');
+      }
+    }
+  </script>
 </body>
 </html>

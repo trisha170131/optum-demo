@@ -1,10 +1,11 @@
 // Use Claude API via REST (no npm dependency needed)
-async function callClaudeAPI(systemPrompt, userMessage) {
+// Falls back to mock mode if API key not set
+async function callClaudeAPI(systemPrompt, userMessage, stepKey) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
+
+  // If no API key, use mock mode for demo purposes
   if (!apiKey) {
-    throw new Error(
-      "ANTHROPIC_API_KEY not set. Please set it in environment variables."
-    );
+    return generateMockResponse(userMessage, stepKey);
   }
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -38,48 +39,51 @@ async function callClaudeAPI(systemPrompt, userMessage) {
   return data.content[0].text;
 }
 
+// Mock response generator for demo mode
+function generateMockResponse(userMessage, stepKey) {
+  const mockResponses = {
+    identity_confirm: "Thank you for confirming your identity. We have verified your last name and date of birth.",
+    insurance: "Thank you for confirming your insurance coverage. Your Blue Cross Blue Shield plan is active in our system.",
+    demographics: "Thank you. We have confirmed all your contact information and demographics are current.",
+    consent: "Thank you for reviewing and confirming the consent forms and privacy practices.",
+    copay_display: "Your estimated copay for this visit is $30. Payment can be made now or at check-in.",
+  };
+
+  return mockResponses[stepKey] || "Thank you for that information.";
+}
+
 const INTAKE_STEPS = [
   {
-    key: "appointment_confirm",
-    label: "Confirm Appointment",
-    prompt:
-      "You have an appointment with Dr. {provider} on {date} at {time}. Can you confirm you'll be there?",
-  },
-  {
-    key: "demographics",
-    label: "Confirm Demographics",
-    prompt:
-      "Let me confirm your info: Name: {name}, DOB: {dob}, Address: {address}. Still correct?",
+    key: "identity_confirm",
+    label: "Confirm Identity",
+    prompt: "Hi {name}, I am reaching out to confirm and check you in for your appointment scheduled on {date}. Can you please respond with your last name and date of birth to verify your identity?",
   },
   {
     key: "insurance",
     label: "Confirm Insurance",
-    prompt:
-      "Is {insurer} {plan} still your active insurance? (Yes/No/Changed)",
+    prompt: "Thank you. Can you please confirm that {insurer} is still your active insurance provider?",
   },
   {
-    key: "insurance_card",
-    label: "Insurance Card Photo",
-    prompt:
-      "Can you text me a photo of your insurance card (front and back)?",
+    key: "demographics",
+    label: "Confirm Contact Information",
+    prompt: "Can you please confirm your current mailing address is still {address}?",
   },
   {
     key: "consent",
-    label: "Consent & HIPAA",
-    prompt:
-      "Please confirm you've reviewed the consent forms. Reply 'I agree' to continue.",
+    label: "Consent & Privacy Review",
+    prompt: "Have you had the opportunity to review our consent forms and privacy practices? Please reply 'yes' to confirm.",
   },
   {
-    key: "copay",
-    label: "Copay Payment",
-    prompt:
-      "Your estimated copay is ${amount}. Will you pay now or at check-in?",
+    key: "copay_display",
+    label: "Copay Notification",
+    prompt: "Your estimated patient responsibility for this visit is ${amount}. This can be paid today or at check-in.",
   },
 ];
 
 export class SMSAgent {
-  constructor(ledgerService) {
+  constructor(ledgerService, fhirClient) {
     this.ledgerService = ledgerService;
+    this.fhirClient = fhirClient;
   }
 
   /**
@@ -90,12 +94,6 @@ export class SMSAgent {
    * @returns {Promise<{response: string, ledger: object, nextStep: string}>}
    */
   async processMessage(phoneNumber, message, ledgerId) {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error(
-        "ANTHROPIC_API_KEY not set. Please set it in environment variables."
-      );
-    }
-
     try {
       const ledger = this.ledgerService.getLedger(ledgerId);
       if (!ledger) {
@@ -114,11 +112,11 @@ export class SMSAgent {
       }
 
       // Build context for Claude
-      const systemPrompt = this._buildSystemPrompt(ledger, currentStep);
+      const systemPrompt = await this._buildSystemPrompt(ledger, currentStep);
       const userPrompt = `Patient response: "${message}"`;
 
-      // Call Claude API
-      const aiResponse = await callClaudeAPI(systemPrompt, userPrompt);
+      // Call Claude API (or use mock if no API key)
+      const aiResponse = await callClaudeAPI(systemPrompt, userPrompt, currentStep.key);
 
       // Parse patient intent and update ledger
       const intent = await this._parseIntent(
@@ -169,23 +167,35 @@ export class SMSAgent {
   /**
    * Build system prompt for Claude
    */
-  _buildSystemPrompt(ledger, currentStep) {
-    const patient = ledger.patientId;
-    const stepDef = INTAKE_STEPS.find((s) => s.key === currentStep.key);
+  async _buildSystemPrompt(ledger, currentStep) {
+    let patientName = '';
+    try {
+      const patient = await this.fhirClient.getPatient(ledger.patientId);
+      if (patient && patient.name && patient.name[0]) {
+        patientName = patient.name[0].given ? patient.name[0].given[0] : patient.name[0].text;
+      }
+    } catch (err) {
+      console.warn('Could not fetch patient name:', err.message);
+    }
 
-    return `You are a friendly healthcare intake assistant helping patients complete their pre-appointment registration via SMS.
+    const stepDef = INTAKE_STEPS.find((s) => s.key === currentStep.key);
+    const prompt = stepDef.prompt.replace('{name}', patientName);
+
+    return `You are a professional healthcare intake assistant helping patients complete their appointment registration via secure message.
 
 Current Step: ${stepDef.label}
-Patient: ${patient}
+Patient First Name: ${patientName}
 
 Your job:
-1. Ask the question naturally and conversationally
-2. Be brief (SMS-friendly, under 160 chars when possible)
-3. If the patient answered the previous question, acknowledge it positively
-4. Ask the next question or move to the next step
-5. Be empathetic and patient-friendly
+1. Maintain a professional, respectful tone
+2. Keep responses concise and clear
+3. Acknowledge patient responses positively before asking the next question
+4. Never ask for sensitive information via text (SSN, full payment info, etc.)
+5. Focus on confirming identity, insurance, contact info, and obtaining consent
 
-Keep responses concise and friendly. Use emojis sparingly (only when appropriate).`;
+Standard greeting for first step: "${prompt}"
+
+Keep responses professional and HIPAA-compliant. Do not include emojis.`;
   }
 
   /**
@@ -196,34 +206,33 @@ Keep responses concise and friendly. Use emojis sparingly (only when appropriate
 
     // Simple intent detection based on step
     switch (stepKey) {
-      case "appointment_confirm":
+      case "identity_confirm":
+        // Check if message contains both a name and date of birth pattern
         return {
-          isComplete: /yes|yep|correct|right|confirm|ok|good/i.test(
+          isComplete: /\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}|dob|birth/.test(lowerMsg),
+          confidence: 0.85,
+        };
+      case "insurance":
+        return {
+          isComplete: /yes|yep|correct|right|confirm|ok|good|active/i.test(
             lowerMsg
           ),
           confidence: 0.9,
         };
       case "demographics":
         return {
-          isComplete: /yes|yep|correct|right|good|ok|all good/i.test(lowerMsg),
+          isComplete: /yes|yep|correct|right|confirm|ok|good|current|same/i.test(lowerMsg),
           confidence: 0.9,
-        };
-      case "insurance":
-        return {
-          isComplete:
-            /yes|yep|still active|same/i.test(lowerMsg) ||
-            /changed|new|different/i.test(lowerMsg),
-          confidence: 0.85,
         };
       case "consent":
         return {
-          isComplete: /agree|i agree|yes|confirm/i.test(lowerMsg),
+          isComplete: /yes|yep|confirm|agree|ok|correct/i.test(lowerMsg),
           confidence: 0.9,
         };
-      case "copay":
+      case "copay_display":
         return {
-          isComplete: /now|pay now|at check.?in|later/i.test(lowerMsg),
-          confidence: 0.85,
+          isComplete: true,
+          confidence: 1.0,
         };
       default:
         return { isComplete: false, confidence: 0.5 };
