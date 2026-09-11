@@ -1,105 +1,2102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Optum · Ambulatory Check-In</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; font-family: 'Inter', sans-serif; background: #FAF8F4; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
-    .header { text-align: center; margin-bottom: 40px; }
-    .logo { font-size: 32px; font-weight: 800; color: #FF5A1F; margin-bottom: 20px; }
-    .title { font-size: 28px; font-weight: 700; color: #1a1a1a; margin-bottom: 10px; }
-    .description { color: #666; margin-bottom: 30px; }
-    .back-btn { display: inline-block; padding: 10px 20px; background: #3D66A6; color: white; border-radius: 8px; text-decoration: none; margin-bottom: 30px; }
-    .back-btn:hover { background: #2d4a7a; }
-    .card { background: white; border: 1px solid #ECE7DD; border-radius: 12px; padding: 30px; margin-bottom: 20px; }
-    .card h2 { color: #1a1a1a; margin-bottom: 15px; }
-    .card p { color: #666; line-height: 1.6; margin-bottom: 10px; }
-    .scenario { background: #FFF0E6; border-left: 4px solid #FF5A1F; padding: 20px; margin: 20px 0; border-radius: 8px; }
-    .info-box { background: #E4F4F4; padding: 20px; border-radius: 8px; margin: 20px 0; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optum · AI Check-In Assistant — Resolution Waterfall Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#FAF8F4;
+ --panel:#FFFFFF;
+ --border:#ECE7DD;
+ --border-soft:#F1EDE6;
+ --gray:#6B7280;
+ --gray-tint:#EEF1F4;
+ --ink:#1E1C18;
+ --ink-soft:#6C685D;
+ --ink-faint:#A29D8F;
+ --orange:#FF5A1F;
+ --orange-dark:#E14E14;
+ --orange-tint:#FFEFE6;
+ --orange-tint2:#FFF7F2;
+ --blue:#3D66A6;
+ --blue-tint:#EAF1FB;
+ --teal:#1E7D82;
+ --teal-tint:#E4F4F4;
+ --green:#3F7D4C;
+ --green-tint:#EAF5EC;
+ --gold:#8A6D23;
+ --gold-tint:#F6EFDD;
+ --red:#B23A2E;
+ --red-tint:#FBEAE7;
+ --purple:#6B4FA0;
+ --purple-tint:#EFEAF7;
+ --r-lg:18px;
+ --r-md:12px;
+ --r-sm:8px;
+ --shadow-sm:0 1px 2px rgba(30,24,10,.05), 0 1px 1px rgba(30,24,10,.03);
+ --shadow-md:0 8px 24px rgba(30,24,10,.07);
+ --shadow-lg:0 16px 48px rgba(30,24,10,.14);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+ font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+ background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;
+ font-size:14px; line-height:1.5;
+}
+button{font-family:inherit; cursor:pointer;}
+
+/* ===== Shell ===== */
+.app{display:flex; flex-direction:column; min-height:100vh;}
+.topbar{
+ background:var(--panel); border-bottom:1px solid var(--border);
+ padding:0 28px; height:64px; display:flex; align-items:center; gap:16px; flex-shrink:0;
+}
+.tb-logo{font-size:21px; font-weight:800; color:var(--orange); letter-spacing:-0.5px;}
+.tb-div{width:1px; height:22px; background:var(--border);}
+.tb-pill{background:var(--orange-tint); color:var(--orange-dark); font-size:11px; font-weight:700; padding:6px 12px; border-radius:99px; letter-spacing:.3px;}
+
+/* Patient identity banner — lives in the topbar next to the logo. Unlike
+   the Acute file, this patient is pre-identified (the appointment was
+   already scheduled), so it's populated the moment the scenario loads
+   instead of waiting for an in-encounter identity-resolution phase. */
+.tb-patient{display:flex; align-items:center; gap:9px; padding:6px 12px 6px 6px; border-radius:12px; background:var(--gray-tint); border:1px solid var(--border-soft); transition:background .3s, border-color .3s; flex-shrink:0;}
+.tb-patient-avatar{width:28px; height:28px; border-radius:8px; background:var(--orange); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; flex-shrink:0; transition:transform .3s, background .3s;}
+.tb-patient-avatar.pop{animation:pop .4s ease;}
+.tb-patient-avatar.unknown{background:var(--ink-faint);}
+.tb-patient-info{min-width:0;}
+.tb-patient-name{font-size:12.5px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:230px;}
+.tb-patient-sub{font-size:10px; color:var(--ink-faint); margin-top:1px; white-space:nowrap;}
+
+/* Nav pill buttons — back to the Registration Queue and forward to the next
+   demo scenario. Live in the light-blue control bar below the topbar,
+   pinned to opposite edges, rather than crowding the topbar itself. */
+.tb-next-btn{
+ display:flex; align-items:center; gap:6px; padding:9px 15px; border:1.5px solid var(--border); border-radius:99px;
+ background:var(--panel); font-size:12px; color:var(--ink-soft); font-weight:700; text-decoration:none;
+ white-space:nowrap; transition:all .15s; flex-shrink:0;
+}
+.tb-next-btn:hover{border-color:var(--orange); color:var(--orange-dark);}
+.tb-next-btn:disabled{opacity:.45; cursor:not-allowed;}
+.tb-next-arrow{display:flex; align-items:center; justify-content:center;}
+
+.control-bar{
+ background:var(--blue-tint); border-bottom:1px solid var(--border);
+ padding:10px 28px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.ctl-btn{
+ padding:9px 16px; border:none; border-radius:9px;
+ font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px;
+ transition:opacity .15s, border-color .15s;
+}
+.ctl-btn:disabled{opacity:.4; cursor:not-allowed;}
+.ctl-primary{background:var(--orange); color:#fff;}
+.ctl-secondary{background:#fff; color:var(--blue); border:1.5px solid #CFDFF3;}
+.ctl-secondary:hover:not(:disabled){border-color:var(--blue);}
+.ctl-note{color:var(--ink-soft); font-size:11.5px;}
+.ctl-next{margin-left:auto;}
+
+.main{max-width:1340px; margin:0 auto; width:100%; display:grid; grid-template-columns:1fr 460px; gap:22px; padding:24px 28px 60px; align-items:start;}
+
+/* ===== Left: Registration Desk ===== */
+.desk-col{display:flex; flex-direction:column; gap:16px;}
+.desk-card{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); overflow:hidden;}
+.desk-head{
+ padding:14px 16px; border-bottom:1px solid var(--border-soft); background:var(--bg);
+ display:flex; align-items:center; gap:10px;
+}
+.mic{
+ width:32px; height:32px; border-radius:9px; background:var(--orange); color:#fff;
+ display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.mic.on{animation:pulse 1.4s infinite;}
+.mic.on .mic-sparkle-icon{animation:sparkleSpin 1.8s linear infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,90,31,.35);} 50%{box-shadow:0 0 0 8px rgba(255,90,31,0);}}
+.desk-head-txt{flex:1;}
+.desk-head-title{font-size:12.5px; font-weight:700;}
+.desk-head-sub{font-size:10.5px; color:var(--ink-faint); margin-top:1px;}
+.listen-badge{font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:99px; white-space:nowrap;}
+.listen-idle{background:var(--gray-tint); color:var(--gray);}
+.listen-active{background:var(--green-tint); color:var(--green);}
+.listen-done{background:var(--blue-tint); color:var(--blue);}
+.listen-declined{background:var(--purple-tint); color:var(--purple);}
+
+/* resolution-journey stack — a persistent, growing list at the top of the
+   desk card, visible from the moment a scenario loads. The preferred
+   channel appears first as an active row; if it goes unanswered it
+   collapses into a compact settled row and the next channel tried appends
+   below it. If the journey continues to the kiosk or front desk, those get
+   their own rows too, stacked below — nothing ever disappears, so the full
+   journey reads top-to-bottom at a glance. */
+.channel-track{
+ display:none; flex-direction:column; gap:5px; padding:9px 16px;
+ border-bottom:1px solid var(--border-soft); background:var(--gray-tint);
+}
+.channel-track.show{display:flex;}
+.channel-row{
+ display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:9px;
+ background:#fff; box-shadow:0 1px 2px rgba(20,20,20,.04);
+ transition:background .3s, padding .3s, box-shadow .3s;
+}
+.channel-row.enter{animation:rowEnter .35s ease;}
+@keyframes rowEnter{from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:translateY(0);}}
+.channel-row.settled{padding:4px 10px; background:transparent; box-shadow:none;}
+.channel-row-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+.channel-row.ch-voice .channel-row-dot{background:var(--purple);}
+.channel-row.ch-sms .channel-row-dot{background:var(--blue);}
+.channel-row.ch-chatbot .channel-row-dot{background:var(--teal);}
+.channel-row.ch-kiosk .channel-row-dot{background:var(--teal);}
+.channel-row.ch-frontdesk .channel-row-dot{background:var(--orange);}
+.channel-row.active-stage:not(.settled) .channel-row-dot{animation:sparklePulse 1.2s ease-in-out infinite;}
+.channel-row-name{font-size:10.5px; font-weight:800; flex-shrink:0; letter-spacing:.2px;}
+.channel-row.ch-voice .channel-row-name{color:var(--purple);}
+.channel-row.ch-sms .channel-row-name{color:var(--blue);}
+.channel-row.ch-chatbot .channel-row-name{color:var(--teal);}
+.channel-row.ch-kiosk .channel-row-name{color:var(--teal);}
+.channel-row.ch-frontdesk .channel-row-name{color:var(--orange-dark);}
+.channel-row-status{font-size:10.5px; color:var(--ink-faint); flex:1; font-weight:600;}
+.channel-row.settled.success .channel-row-status{color:var(--green); font-weight:700;}
+.channel-row-pips{display:flex; gap:4px; flex-shrink:0; transition:opacity .3s;}
+.channel-row.settled .channel-row-pips{opacity:.55;}
+.pip{width:6px; height:6px; border-radius:50%; background:var(--border); transition:background .25s, transform .2s;}
+.pip.used{background:var(--gold);}
+.pip.fail{background:var(--red);}
+.pip.success{background:var(--green);}
+.pip.current{transform:scale(1.3); animation:sparklePulse 1s ease-in-out infinite;}
+
+/* live status ribbon */
+.live-status{
+ padding:11px 16px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:9px;
+ border-bottom:1px solid var(--border-soft); transition:background .3s, color .3s;
+ background:var(--bg); color:var(--ink-faint);
+}
+.live-status.st-listening{background:var(--orange-tint2); color:var(--orange-dark);}
+.live-status.st-working{background:var(--blue-tint); color:var(--blue);}
+.live-status.st-done{background:var(--green-tint); color:var(--green);}
+.live-status.st-needstaff{background:var(--gold-tint); color:var(--gold);}
+.live-status.st-exception{background:var(--red-tint); color:var(--red);}
+.live-status.st-legal{background:var(--teal-tint); color:var(--teal);}
+.live-status.st-manual{background:var(--purple-tint); color:var(--purple);}
+.live-status.st-skip{background:var(--border-soft); color:var(--ink-faint);}
+
+/* system activity — EHR connects, API calls (Optum Real), and system checks,
+   shown as light AI-sparkle cards embedded directly inside the trace card
+   for whichever step they belong to — same visual language as the identity
+   and auto-fill field cards, so staff read it as "AI is doing this" rather
+   than a raw backend log. */
+.trace-sys-slot{display:flex; flex-direction:column; gap:8px;}
+.trace-sys-slot:not(:empty){margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed var(--border-soft);}
+.act-card{display:flex; align-items:center; gap:10px; border:1.5px solid var(--border-soft); border-radius:var(--r-sm); padding:8px 10px; background:var(--bg); animation:fadein .25s ease; transition:border-color .25s, background .25s;}
+.act-card-icon{width:22px; height:22px; border-radius:6px; background:var(--ink-faint); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; opacity:.4; transition:opacity .25s, background .25s;}
+.act-card-icon.active{opacity:1; background:var(--orange); animation:sparklePulse 1s ease-in-out infinite;}
+.act-card-icon.active .ai-sparkle-icon{animation:sparkleSpin 1.8s linear infinite;}
+.act-card-body{flex:1; min-width:0;}
+.act-card-label{font-size:11.5px; font-weight:700; color:var(--ink);}
+.act-card-detail{font-size:10.5px; color:var(--ink-faint); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.act-card-time{font-size:11px; font-weight:700; color:var(--ink-faint); flex-shrink:0; white-space:nowrap;}
+.act-card.ok{border-color:#c7d7ec; background:var(--blue-tint);}
+.act-card.ok .act-card-icon{background:var(--blue); opacity:1;}
+.act-card.ok .act-card-time{color:var(--blue);}
+.act-card.warn{border-color:#eddfb0; background:var(--gold-tint);}
+.act-card.warn .act-card-icon{background:var(--gold); opacity:1;}
+.act-card.warn .act-card-time{color:var(--gold);}
+.act-card.err{border-color:#eccac4; background:var(--red-tint);}
+.act-card.err .act-card-icon{background:var(--red); opacity:1;}
+.act-card.err .act-card-time{color:var(--red);}
+.act-card.deferred{border-color:#c7d7ec; background:var(--blue-tint);}
+.act-card.deferred .act-card-icon{background:var(--blue); opacity:1;}
+.act-card.deferred .act-card-time{color:var(--blue);}
+
+.transcript{padding:14px 16px; max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; background:#fff;}
+.transcript-empty{display:flex; flex-direction:column; align-items:center; gap:12px; padding:18px 10px; text-align:center;}
+.transcript-empty p{color:var(--ink-faint); font-size:12px; line-height:1.6; max-width:320px;}
+.start-btn{
+ padding:13px 26px; border-radius:99px; border:none; background:var(--orange); color:#fff;
+ font-size:13.5px; font-weight:800; display:flex; align-items:center; gap:9px; box-shadow:var(--shadow-md);
+ animation:startpulse 1.8s infinite;
+}
+@keyframes startpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,90,31,.28), var(--shadow-md);} 50%{box-shadow:0 0 0 10px rgba(255,90,31,0), var(--shadow-md);}}
+.start-btn:disabled{animation:none; opacity:.5;}
+
+@keyframes fadein{from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);}}
+
+/* live transcription turns — rendered as chat bubbles between staff and
+   patient (EMS handoff shares the staff side, since it's provider speech
+   too). Text still grows in character-by-character, matching a live ASR
+   feed, it's just presented as a bubble now instead of a flat caption. */
+.t-turn{display:flex; flex-direction:column; max-width:78%; animation:fadein .3s ease;}
+.t-turn.staff, .t-turn.ems{align-self:flex-start; align-items:flex-start;}
+.t-turn.patient{align-self:flex-end; align-items:flex-end;}
+.t-turn-head{display:flex; align-items:center; gap:6px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--ink-faint); margin-bottom:4px; padding:0 3px;}
+.t-turn-dot{width:6px; height:6px; border-radius:50%; flex-shrink:0;}
+.t-turn.patient .t-turn-dot{background:var(--orange);}
+.t-turn.staff .t-turn-dot{background:var(--blue);}
+.t-turn.ems .t-turn-dot{background:var(--red);}
+.t-turn-bubble{font-size:13px; line-height:1.5; padding:9px 13px; border-radius:15px;}
+.t-turn.staff .t-turn-bubble{background:var(--blue-tint); color:var(--ink); border-bottom-left-radius:4px;}
+.t-turn.ems .t-turn-bubble{background:var(--red-tint); color:var(--ink); border-bottom-left-radius:4px;}
+.t-turn.patient .t-turn-bubble{background:var(--orange); color:#fff; border-bottom-right-radius:4px;}
+.t-turn.patient .cursor{background:#fff;}
+
+/* manual intake form — a growing card of label/value rows for whatever
+   isn't captured through AI or automation. Reusable across scenarios: a
+   new field appends to the current card, and a differently-titled field
+   starts a fresh card. */
+.manual-form{align-self:stretch; width:100%; border:1.5px dashed var(--border); border-radius:10px; padding:10px 12px; background:var(--panel); margin:4px 0;}
+.manual-form-title{font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-faint); opacity:.75; padding-bottom:6px; margin-bottom:6px; border-bottom:1px dashed var(--border-soft);}
+.manual-form-row + .manual-form-row{margin-top:8px; padding-top:8px; border-top:1px dashed var(--border-soft);}
+.manual-form-label{font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--ink-faint); margin-bottom:3px;}
+.manual-form-value{font-size:12.5px; color:var(--ink); font-weight:600;}
+.manual-form-input-wrap{display:flex; gap:6px; align-items:center;}
+.manual-form-input{flex:1; min-width:0; padding:7px 9px; border:1.5px solid var(--orange); border-radius:6px; font-size:12.5px; font-weight:600; color:var(--ink); background:#fff;}
+.manual-form-input:focus{outline:none; box-shadow:0 0 0 3px rgba(255,90,31,.12);}
+.manual-form-input::placeholder{color:var(--ink-faint); font-weight:400;}
+.manual-form-enter{padding:7px 12px; border:none; border-radius:6px; background:var(--orange); color:#fff; font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0;}
+.manual-form-enter:hover{filter:brightness(1.06);}
+
+/* AI-filled identity fields — lives inside the Identity Resolution trace
+   card on the left and persists across steps once filled. Each row is a
+   label, a text box that fills live with a sparkle badge that animates
+   only while that specific field is actively being extracted, and a tag
+   row with an Edit affordance so staff can correct an AI mistake. */
+.trace-ai-fields{display:flex; flex-direction:column; gap:10px;}
+.trace-ai-fields:not(:empty){padding-bottom:12px; margin-bottom:12px; border-bottom:1px dashed var(--border-soft);}
+.ai-id-field{display:flex; flex-direction:column; gap:5px;}
+.ai-id-label{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--ink-faint);}
+.ai-id-row{display:flex; align-items:center; gap:8px;}
+.ai-id-box{flex:1; min-height:16px; display:flex; align-items:center; border:1.5px solid var(--border); border-radius:7px; padding:6px 10px; background:var(--bg);}
+.ai-id-value{font-size:12.5px; font-weight:600; color:var(--ink);}
+.ai-id-sparkle{width:20px; height:20px; border-radius:6px; background:var(--orange); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; opacity:.3; transition:opacity .25s;}
+.ai-id-sparkle.active{opacity:1; animation:sparklePulse 1s ease-in-out infinite;}
+.ai-id-sparkle.active .ai-sparkle-icon{animation:sparkleSpin 1.8s linear infinite;}
+@keyframes sparklePulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.15);}}
+@keyframes sparkleSpin{to{transform:rotate(360deg);}}
+.ai-id-tag-row{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+.ai-id-tag{font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--ink-faint);}
+.ai-id-field.ai-id-edited .ai-id-box{border-color:#c7d7ec; background:var(--blue-tint);}
+.ai-id-field.ai-id-edited .ai-id-value{color:var(--blue);}
+.ai-id-field.ai-id-edited .ai-id-tag{color:var(--blue);}
+.ai-id-edit-btn{background:none; border:none; padding:0; margin:0; font-size:10px; font-weight:700; color:var(--orange); text-decoration:none; cursor:pointer; flex-shrink:0;}
+.ai-id-edit-btn:hover{color:var(--orange-dark); text-decoration:underline;}
+.ai-id-field.ai-id-editing{gap:6px;}
+.ai-id-edit-input{width:100%; padding:6px 8px; border:1.5px solid var(--orange); border-radius:6px; font-size:12.5px; font-weight:600; color:var(--ink); background:#fff;}
+.ai-id-edit-input:focus{outline:none;}
+.ai-id-edit-actions{display:flex; gap:6px;}
+.ai-id-edit-save{flex:1; padding:5px 8px; border-radius:6px; border:none; background:var(--orange); color:#fff; font-size:10px; font-weight:700; cursor:pointer;}
+.ai-id-edit-save:hover{filter:brightness(1.06);}
+.ai-id-edit-cancel{flex:1; padding:5px 8px; border-radius:6px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink-soft); font-size:10px; font-weight:700; cursor:pointer;}
+.ai-id-edit-cancel:hover{border-color:var(--ink-faint);}
+
+/* Auto-fill fields — lives inside the Auto-Fill trace card on the left,
+   same sleek label/box language as the identity fields, but with a
+   checkmark badge (pulled from EHR) instead of a sparkle (AI-extracted
+   from speech), colored by the same states as the desk-side field cards. */
+.trace-autofill-fields{display:flex; flex-direction:column; gap:10px;}
+.trace-autofill-fields:not(:empty){padding-bottom:12px; margin-bottom:12px; border-bottom:1px dashed var(--border-soft);}
+.autofill-field{display:flex; flex-direction:column; gap:5px;}
+.autofill-field-label{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--ink-faint);}
+.autofill-field-row{display:flex; align-items:center; gap:8px;}
+.autofill-field-box{flex:1; min-height:16px; display:flex; align-items:center; border:1.5px solid var(--border); border-radius:7px; padding:6px 10px; background:var(--bg); transition:border-color .2s, background .2s;}
+.autofill-field-value{font-size:12.5px; font-weight:600; color:var(--ink);}
+.autofill-field-icon{width:18px; height:18px; border-radius:5px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff; background:var(--ink-faint); opacity:.45; transition:opacity .2s, transform .2s;}
+.autofill-field-icon.active{opacity:1; transform:scale(1.15);}
+.autofill-field-tag{font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--ink-faint);}
+.autofill-field.f-auto .autofill-field-box{border-color:#c7d7ec; background:var(--blue-tint);}
+.autofill-field.f-auto .autofill-field-tag{color:var(--blue);}
+.autofill-field.f-auto .autofill-field-icon{background:var(--blue);}
+.autofill-field.f-stale .autofill-field-box{border-color:#eddfb0; background:var(--gold-tint);}
+.autofill-field.f-stale .autofill-field-tag{color:var(--gold);}
+.autofill-field.f-stale .autofill-field-icon{background:var(--gold);}
+.autofill-field.f-updated .autofill-field-box{border-color:#bfe0e0; background:var(--teal-tint);}
+.autofill-field.f-updated .autofill-field-tag{color:var(--teal);}
+.autofill-field.f-updated .autofill-field-icon{background:var(--teal);}
+.autofill-field.f-none .autofill-field-box{border-color:var(--border-soft); background:var(--panel);}
+.autofill-field.f-none .autofill-field-tag{color:var(--ink-faint);}
+.autofill-field.f-none .autofill-field-icon{background:var(--ink-faint);}
+.autofill-field.f-exception .autofill-field-box{border-color:#eccac4; background:var(--red-tint);}
+.autofill-field.f-exception .autofill-field-tag{color:var(--red);}
+.autofill-field.f-exception .autofill-field-icon{background:var(--red);}
+
+/* Next Best AI-Suggested Action — replaces the old static explainer legend;
+   stays empty (and collapsed) until an encounter finishes. */
+.legend:empty{display:none; margin-top:0; padding:0; border:none;}
+.next-action-card{display:flex; align-items:flex-start; gap:12px;}
+.next-action-icon{width:26px; height:26px; border-radius:8px; background:var(--orange); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.next-action-icon .ai-sparkle-icon{animation:sparkleSpin 3s linear infinite;}
+.next-action-body{flex:1;}
+.next-action-title{font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--orange-dark); margin-bottom:4px;}
+.next-action-text{font-size:12.5px; line-height:1.6; color:var(--ink-soft);}
+.next-action-card.confirmed .next-action-icon{background:var(--green);}
+.next-action-card.confirmed .next-action-title{color:var(--green);}
+.next-action-confirm-btn{
+ margin-top:10px; padding:7px 14px; border-radius:99px; border:1.5px solid var(--orange);
+ background:#fff; color:var(--orange-dark); font-size:11.5px; font-weight:700; cursor:pointer;
+ transition:background .2s, color .2s;
+}
+.next-action-confirm-btn:hover{background:var(--orange); color:#fff;}
+.next-action-confirmed-note{
+ margin-top:10px; display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--green);
+}
+.next-action-listening-note{
+ margin-top:10px; display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; color:var(--orange-dark);
+}
+.next-action-listening-dot{width:7px; height:7px; border-radius:50%; background:var(--orange); flex-shrink:0; animation:sparklePulse 1.2s ease-in-out infinite;}
+
+.cursor{display:inline-block; width:2px; height:13px; background:currentColor; margin-left:2px; vertical-align:middle; animation:blink 1s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+
+.identity-block{padding:14px 16px; border-top:1px solid var(--border-soft); display:flex; align-items:center; gap:12px; transition:box-shadow .3s;}
+.avatar{width:42px; height:42px; border-radius:11px; background:var(--orange); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14.5px; flex-shrink:0; transition:transform .3s;}
+.avatar.pop{animation:pop .4s ease;}
+@keyframes pop{0%{transform:scale(.6);} 60%{transform:scale(1.12);} 100%{transform:scale(1);}}
+.avatar.unknown{background:var(--ink-faint);}
+.id-name{font-size:14px; font-weight:700;}
+.id-sub{font-size:11.5px; color:var(--ink-faint); margin-top:1px;}
+.id-right{margin-left:auto; text-align:right;}
+.conf-badge{font-size:11px; font-weight:800; padding:5px 10px; border-radius:99px; white-space:nowrap;}
+.conf-high{background:var(--green-tint); color:var(--green);}
+.conf-mid{background:var(--gold-tint); color:var(--gold);}
+.conf-low{background:var(--red-tint); color:var(--red);}
+.conf-none{background:var(--purple-tint); color:var(--purple);}
+.conf-label{font-size:9.5px; color:var(--ink-faint); margin-top:4px; font-weight:600; text-transform:uppercase; letter-spacing:.3px;}
+
+.fields-grid{padding:12px 16px 4px; display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+.field-card{position:relative; border:1px solid var(--border-soft); border-radius:var(--r-sm); padding:9px 11px; background:var(--bg); transition:box-shadow .3s, border-color .3s;}
+.field-card.f-auto{border-color:#c7d7ec; background:var(--blue-tint);}
+.field-card.f-stale{border-color:#eddfb0; background:var(--gold-tint);}
+.field-card.f-updated{border-color:#bfe0e0; background:var(--teal-tint);}
+.field-card.f-edited{border-color:#DCCFEF; background:var(--purple-tint);}
+.field-card.f-kiosk{border-color:#eddfb0; background:var(--gold-tint);}
+.field-card.f-kiosk .field-tag{color:var(--gold);}
+.field-card.f-exception{border-color:#eccac4; background:var(--red-tint);}
+.field-card.f-exception .field-tag{color:var(--red);}
+.field-card.f-none{border-color:var(--border-soft); background:var(--panel);}
+.field-card.f-editing{border-color:var(--orange); background:var(--panel); grid-column:span 1;}
+.field-card.just-filled{animation:flashfill .9s ease;}
+@keyframes flashfill{0%{box-shadow:0 0 0 0 rgba(61,102,166,0);} 15%{box-shadow:0 0 0 5px rgba(61,102,166,.18);} 100%{box-shadow:0 0 0 0 rgba(61,102,166,0);}}
+.field-card.needs-staff{border-color:var(--gold); animation:needpulse 1.3s infinite;}
+@keyframes needpulse{0%,100%{box-shadow:0 0 0 0 rgba(138,109,35,.22);} 50%{box-shadow:0 0 0 6px rgba(138,109,35,0);}}
+.field-flag{position:absolute; top:-8px; right:8px; background:var(--gold); color:#fff; font-size:9px; font-weight:800; padding:2px 7px; border-radius:99px; letter-spacing:.3px;}
+.field-label{font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--ink-faint);}
+.field-value{font-size:12px; font-weight:600; margin-top:3px; color:var(--ink);}
+.field-tag-row{display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:5px;}
+.field-tag{font-size:9.5px; font-weight:700; display:inline-block;}
+.field-card.f-auto .field-tag{color:var(--blue);}
+.field-card.f-stale .field-tag{color:var(--gold);}
+.field-card.f-updated .field-tag{color:var(--teal);}
+.field-card.f-edited .field-tag{color:var(--purple);}
+.field-card.f-none .field-tag{color:var(--ink-faint);}
+.field-edit-btn{background:none; border:none; padding:0; margin:0; font-size:10px; font-weight:700; color:var(--orange); text-decoration:none; cursor:pointer; flex-shrink:0;}
+.field-edit-btn:hover{color:var(--orange-dark); text-decoration:underline;}
+.field-edit-input{width:100%; margin-top:4px; padding:6px 8px; border:1.5px solid var(--orange); border-radius:6px; font-size:12px; font-weight:600; font-family:inherit; color:var(--ink); background:#fff;}
+.field-edit-input:focus{outline:none;}
+.field-edit-actions{display:flex; gap:6px; margin-top:7px;}
+.field-edit-save{flex:1; padding:6px 8px; border-radius:6px; border:none; background:var(--orange); color:#fff; font-size:10.5px; font-weight:700; cursor:pointer;}
+.field-edit-save:hover{filter:brightness(1.06);}
+.field-edit-cancel{flex:1; padding:6px 8px; border-radius:6px; border:1.5px solid var(--border); background:var(--panel); color:var(--ink-soft); font-size:10.5px; font-weight:700; cursor:pointer;}
+.field-edit-cancel:hover{border-color:var(--ink-faint);}
+
+/* Staff action checkpoint — now lives inside the relevant left-hand trace
+   card (Staff Confirm, Consent & HIPAA) instead of a fixed bar on the right
+   desk view, so the decision sits right next to the step it belongs to. */
+.trace-action-slot:not(:empty){padding-top:12px; margin-top:12px; border-top:1px dashed var(--border-soft);}
+.trace-action-card{display:flex; flex-direction:column; gap:10px; animation:fadein .25s ease;}
+.trace-action-prompt{padding:10px 12px; border-radius:var(--r-sm); background:var(--gold-tint); border:1.5px solid #eddfb0; font-size:11.5px; color:var(--gold); font-weight:600; line-height:1.5; animation:needpulse 1.6s infinite;}
+.trace-action-btns{display:flex; gap:8px;}
+.act-btn{flex:1; padding:10px 12px; border-radius:9px; font-size:12px; font-weight:700; border:1.5px solid var(--border); background:var(--panel); color:var(--ink-soft); text-align:center; transition:all .15s; cursor:pointer;}
+.act-btn.primary{background:var(--orange); border-color:var(--orange); color:#fff;}
+.act-btn:hover{filter:brightness(1.06);}
+.trace-action-note{font-size:10.5px; color:var(--ink-faint); text-align:center; line-height:1.5;}
+
+/* ===== Right: Trace ===== */
+.trace-head{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-faint); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;}
+.trace-list{display:flex; flex-direction:column; gap:10px;}
+.trace-item{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-md); overflow:hidden; transition:border-color .25s, box-shadow .25s, opacity .3s; opacity:.5;}
+.trace-item.reached{opacity:1;}
+.trace-item.hl{border-color:var(--orange); box-shadow:0 0 0 3px rgba(255,90,31,.12);}
+.trace-item-head{padding:12px 16px; display:flex; align-items:center; gap:10px; background:var(--bg); border-bottom:1px solid var(--border-soft); cursor:pointer; user-select:none; transition:border-color .2s;}
+.trace-item.collapsed .trace-item-head{border-bottom-color:transparent;}
+.trace-chevron{width:14px; height:14px; flex-shrink:0; color:var(--ink-faint); display:flex; align-items:center; justify-content:center; transition:transform .2s ease;}
+.trace-item.collapsed .trace-chevron{transform:rotate(-90deg);}
+.trace-num{width:22px; height:22px; border-radius:50%; background:var(--gray-tint); color:var(--gray); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background .3s, color .3s;}
+.trace-item.reached .trace-num{background:var(--orange); color:#fff;}
+.trace-title-block{display:flex; flex-direction:column; gap:1px; flex:1; min-width:0;}
+.trace-title{font-size:12.5px; font-weight:700;}
+.trace-collapsed-hint{font-size:10.5px; font-weight:700; color:var(--red); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.pill{font-size:9.5px; font-weight:800; padding:4px 9px; border-radius:99px; text-transform:uppercase; letter-spacing:.3px; white-space:nowrap;}
+.pill-pending{background:var(--gray-tint); color:var(--gray);}
+.pill-active{background:var(--gold-tint); color:var(--gold);}
+.pill-done{background:var(--green-tint); color:var(--green);}
+.pill-exception{background:var(--red-tint); color:var(--red);}
+.pill-blocked{background:var(--blue-tint); color:var(--blue);}
+.pill-manual{background:var(--purple-tint); color:var(--purple);}
+.pill-legal{background:var(--teal-tint); color:var(--teal);}
+.pill-skip{background:var(--border-soft); color:var(--ink-faint); opacity:.75;}
+.trace-item-body{padding:14px 16px; font-size:12px; color:#444; max-height:1400px; opacity:1; transition:max-height .28s ease, opacity .2s ease, padding .2s ease;}
+.trace-item.collapsed .trace-item-body{max-height:0; opacity:0; padding-top:0; padding-bottom:0; overflow:hidden;}
+.trace-kv{display:flex; justify-content:space-between; gap:10px; padding:3.5px 0; border-bottom:1px solid var(--border-soft);}
+.trace-kv:last-of-type{border-bottom:none;}
+.trace-kv-label{color:var(--ink-faint); white-space:nowrap;}
+.trace-kv-val{font-weight:600; text-align:right; color:var(--ink);}
+.trace-note{margin-top:8px; padding-top:8px; border-top:1px dashed var(--border-soft); color:var(--ink-soft); line-height:1.55; font-style:italic; font-size:11.5px;}
+.trace-placeholder{color:var(--ink-faint); font-style:italic; font-size:11.5px;}
+
+.legend{margin-top:18px; padding:13px 16px; background:var(--panel); border-radius:var(--r-md); border:1px solid var(--border); font-size:11.5px; color:var(--ink-soft); line-height:1.65;}
+.legend b{color:var(--ink);}
+</style>
 </head>
 <body>
-  <div class="container">
-    <a href="index.html" class="back-btn">← Back to Index</a>
-    
-    <div class="header">
-      <div class="logo">Optum</div>
-      <div class="title">Ambulatory Check-In</div>
-      <div class="description">AI-assisted pre-visit registration with 5-stage resolution waterfall</div>
-    </div>
+<div class="app">
 
-    <div class="card">
-      <h2>Demo Scenarios</h2>
-      <p>This page demonstrates the ambulatory check-in workflow with three patient scenarios:</p>
-      
-      <div class="scenario">
-        <strong>1. Elena Ruiz — Perfect Auto-Resolution</strong>
-        <p>Identity matched in EHR, RTE returns Active insurance ($35 copay), all fields resolve automatically</p>
-        <p><strong>Key Point:</strong> Watch the Real-Time Eligibility check succeed and populate copay data</p>
-      </div>
+ <div class="topbar">
+ <div class="tb-logo">Optum</div>
+ <div class="tb-div"></div>
+ <div class="tb-patient" id="tbPatient">
+ <div class="tb-patient-avatar unknown" id="tbPatientAvatar">—</div>
+ <div class="tb-patient-info">
+ <div class="tb-patient-name" id="tbPatientName">Patient Not Yet Identified</div>
+ <div class="tb-patient-sub" id="tbPatientSub">Awaiting appointment lookup</div>
+ </div>
+ </div>
+ </div>
 
-      <div class="scenario">
-        <strong>2. Marcus Webb — RTE Exception + SMS</strong>
-        <p>RTE flags insurance as inactive. System sends SMS, patient responds with new insurance</p>
-        <p><strong>Key Point:</strong> See exception handling route to SMS outreach</p>
-      </div>
+ <div class="control-bar">
+ <a class="tb-next-btn" href="queue-dashboard.html"><span class="tb-next-arrow" style="transform:rotate(180deg);"><svg viewBox="0 0 24 24" width="12" height="12"><path d="M9 6 L15 12 L9 18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Registration Queue</a>
+ <span class="ctl-note" id="progressNote">Ready — click "Start Check-In" to begin</span>
+ <button class="tb-next-btn ctl-next" id="tbNextBtn" onclick="nextScenario()">Next Scenario<span class="tb-next-arrow"><svg viewBox="0 0 24 24" width="12" height="12"><path d="M9 6 L15 12 L9 18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+ </div>
 
-      <div class="scenario">
-        <strong>3. Diane Foster — Full Cascade</strong>
-        <p>Auto-resolution flags items, SMS misses, escalates to kiosk, then front desk</p>
-        <p><strong>Key Point:</strong> Multi-stage fallback ensures high resolution</p>
-      </div>
-    </div>
+ <div class="main">
 
-    <div class="card">
-      <h2>5-Stage Resolution Waterfall</h2>
-      <div class="info-box">
-        <strong>Stage 1:</strong> Auto-Resolution (EHR + RTE)<br>
-        <strong>Stage 2:</strong> Preferred Channel Outreach (SMS/Voice)<br>
-        <strong>Stage 3:</strong> Self Check-In at Clinic (Kiosk)<br>
-        <strong>Stage 4:</strong> Front Desk with Ambient Listening<br>
-        <strong>Stage 5:</strong> Manual/Exception Resolution
-      </div>
-    </div>
+ <!-- LEFT: Behind the scenes trace -->
+ <div class="trace">
+ <div class="trace-head">Patient AI Intake</div>
+ <div class="trace-list" id="traceList"></div>
 
-    <div class="card">
-      <h2>Real-Time Eligibility (RTE) Integration</h2>
-      <p>The system calls Real-Time Eligibility at the start of auto-resolution to verify:</p>
-      <ul style="margin-left: 20px; margin-top: 10px;">
-        <li>Insurance status (Active/Inactive)</li>
-        <li>In-Network coverage</li>
-        <li>Copay amounts by service type</li>
-        <li>Deductible remaining</li>
-      </ul>
-    </div>
+ <div class="legend" id="legendPanel"></div>
+ </div>
 
-    <div class="card">
-      <h2>Architecture</h2>
-      <p>This demo shows how the system orchestrates multiple integrations:</p>
-      <div class="info-box">
-        • EHR (Epic MPI) for patient identity<br>
-        • RTE for insurance eligibility<br>
-        • MyChart for pre-visit confirmation<br>
-        • SMS/Voice APIs for outreach<br>
-        • Kiosk for self-service<br>
-        • Ambient listening for staff interactions
-      </div>
-    </div>
+ <!-- RIGHT: Registration desk view, plus the Activity console below it -->
+ <div class="desk-col">
+ <div class="desk-card">
+ <div class="desk-head">
+ <div class="mic" id="mic"><svg class="mic-sparkle-icon" viewBox="0 0 24 24" width="16" height="16"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" fill="currentColor"/></svg></div>
+ <div class="desk-head-txt">
+ <div class="desk-head-title" id="deskHeadTitle">AI Check-In Assistant</div>
+ <div class="desk-head-sub" id="deskHeadSub">Auto-resolves via EHR/RTE first, then cascades to outreach, kiosk, and staff only for what's left</div>
+ </div>
+ <span class="listen-badge listen-idle" id="listenBadge">Idle</span>
+ </div>
 
-    <div class="card">
-      <h2>Next Steps</h2>
-      <p>This frontend is ready for backend integration. Engineers will:</p>
-      <ol style="margin-left: 20px; margin-top: 10px;">
-        <li>Replace mock RTE calls with real Optum endpoints</li>
-        <li>Connect to actual EHR systems</li>
-        <li>Integrate real SMS/Voice APIs</li>
-        <li>Add staff authentication</li>
-        <li>Implement audit logging for HIPAA compliance</li>
-      </ol>
-    </div>
-  </div>
+ <div class="channel-track" id="channelTrack"></div>
+
+ <div class="live-status" id="liveStatus"><span id="liveStatusText">Waiting to start…</span></div>
+
+ <div class="transcript" id="transcript">
+ <div class="transcript-empty">
+ <p>One continuous timeline: silent auto-resolution, then — only for whatever's left — outreach on the patient's preferred channel, in-clinic kiosk chatbot, and front-desk ambient listening. Pick a scenario above, then start the encounter.</p>
+ <button class="start-btn" id="startBtn" onclick="startScenario()">Start Check-In</button>
+ </div>
+ </div>
+
+ <div class="identity-block" id="identityBlock">
+ <div class="avatar unknown" id="avatar">—</div>
+ <div>
+ <div class="id-name" id="idName">Awaiting verification</div>
+ <div class="id-sub" id="idSub">Awaiting EHR/RTE validation</div>
+ </div>
+ <div class="id-right">
+ <span class="conf-badge conf-none" id="confBadge">—</span>
+ <div class="conf-label" id="confLabel">validation confidence</div>
+ </div>
+ </div>
+
+ <div class="fields-grid" id="fieldsGrid"></div>
+
+ </div>
+ </div>
+ </div>
+</div>
+
+<script>
+// ── The 5-stage resolution waterfall. Each stage only handles whatever the
+// stage above it couldn't resolve — the point of the architecture is that
+// most patients never reach stage 3, let alone 4 or 5.
+//   01 Auto-Resolution        — existing systems only (Optum RTE, EHR/MPI match). No patient or staff contact.
+//   02 Preferred-Channel Outreach — Two way SMS AI, Voice AI, or a self-check-in chatbot link, whichever the patient prefers.
+//   03 Self Check-In at Clinic — in-clinic kiosk chatbot, still zero staff time.
+//   04 Front Desk — Ambient Listening — a real staff member, but ambient listening does the typing.
+//   05 Manual / Exception Resolution — whatever truly can't be automated (e.g. a lapsed-coverage balance) is flagged for a person.
+const STEPS = [
+ { key:'auto', label:'01 Auto-Resolution' },
+ { key:'outreach', label:'02 Preferred-Channel Outreach' },
+ { key:'kiosk', label:'03 Self Check-In at Clinic' },
+ { key:'frontdesk', label:'04 Front Desk — Ambient Listening' },
+ { key:'exception', label:'05 Manual / Exception Resolution' }
+];
+const FIELD_ORDER = ['demographics','insurance','consent','copay','medications','allergies','medicalHistory'];
+const FIELD_LABELS = {demographics:'Identity & Demographics', insurance:'Insurance & RTE', consent:'Consent & Intake', copay:'Copay / Payment', medications:'Medications', allergies:'Allergies', medicalHistory:'Medical History'};
+// Ambient-capture field labels used at the Front Desk stage — a real staff
+// conversation, transcribed live, with structured fields extracted from it
+// instead of typed by hand.
+const AI_ID_FIELD_ORDER = ['Insurance','Group Number','Member ID'];
+
+// ── Next Best AI-Suggested Action — shown once an encounter finishes,
+// in place of the old static explainer legend. One suggestion per scenario,
+// indexed the same way as SCENARIOS below.
+const NEXT_BEST_ACTIONS = [
+ 'Every field resolved automatically from existing systems — Optum RTE and the EHR match — with zero outreach and zero staff time. AI suggests routing every returning patient with recent, valid data through this exact zero-touch path by default.',
+ 'Auto-Resolution flagged four stale fields; SMS closed all of them before arrival, so the patient never touched a kiosk or a staff member. AI suggests defaulting first-contact outreach to whichever channel a patient has responded fastest on in the past, rather than a fixed order.',
+ 'SMS and Voice outreach all went unanswered, so the waterfall skipped the kiosk and cascaded straight into front-desk ambient listening rather than stalling the visit — and the one true exception (a legacy balance) was routed to a person instead of blocking check-in. AI suggests asking Diane directly which channel she actually prefers and whether there’s a better time to reach her, and using her ambient-captured answer as the default outreach channel and window next visit — instead of guessing at either algorithmically.'
+];
+
+// ── Scenario scripts — each beat maps to one stage of the resolution
+// waterfall and runs a sequence of visual phases in order (status ribbon,
+// transcript, EHR/API system calls, field fills, identity reveal,
+// interactive checkpoints). Stage 01 is always silent system activity —
+// no patient or staff contact. Stages 02-05 only ever run for whatever the
+// stage before them couldn't resolve; when nothing's left, a stage plays a
+// short "Skipped" beat instead of being skipped from the trace, so the
+// cascade logic stays visible even when it short-circuits. ───
+const SCENARIOS = [
+ { // 0 — Elena Ruiz: everything resolves at Auto-Resolution. The target case.
+ // preResolved: her registration is fully finished before she ever arrives,
+ // so loading her record shows the completed waterfall directly instead of
+ // a "Start Check-In" screen — staff expand any of the 5 cards to see what
+ // Auto-Resolution already did.
+ name:'Elena Ruiz',
+ tagline:'Full auto-resolution — zero outreach, zero staff time',
+ patient:{name:'Elena Ruiz', dob:'03/22/1979', gender:'Female', mrn:'MRN-70234', avatar:'ER', avatarUnknown:false, preferredChannel:null},
+ preResolved:true,
+ beats:[
+ { step:'auto', trace:{state:'done', detail:{'EHR Match':'Auto-matched via scheduled appointment (Epic MPI)', 'RTE Result':'Active · In-Network (Cigna HealthSpring)', 'Fields resolved':'7 of 7 — no outreach needed', 'Clinical history':'Confirmed via MyChart pre-visit check-in — no changes'},
+ note:'Demographics, insurance, and consent are safe to resolve silently — RTE is a live payer check, not a guess. Medications, allergies, and history are different: the EHR copy could be stale, so those still get an active patient confirmation, just a self-service one-tap check via MyChart 2 days out, not a live outreach call or text.'},
+ phases:[
+ {type:'status', text:'Running Auto-Resolution — matching scheduled appointment against EHR…', cls:'st-working'},
+ {type:'connect', system:'EHR', label:'Epic Care Everywhere', result:'success', ms:1000},
+ {type:'identity', data:{name:'Elena Ruiz', sub:'DOB 03/22/1979 · MRN-70234', avatar:'ER', avatarUnknown:false, confClass:'conf-high', confVal:'99%'}},
+ {type:'status', text:'Calling Optum Real-Time Eligibility…', cls:'st-working'},
+ {type:'api', method:'POST', endpoint:'/v3/eligibility/check', payer:'Cigna HealthSpring · C-4471082', result:'ok', latencyTarget:2.6,
+ resultLabel:'Active · In-Network', resultDetail:'$35 specialist copay · $0 deductible remaining'},
+ {type:'sys', label:'Consent Check', status:'On File — Valid', tone:'ok', detail:'Signed 6 months ago · covers this visit type.'},
+ {type:'sys', label:'MyChart Pre-Visit Check-In', status:'Completed — No Changes', tone:'ok', detail:'Patient self-confirmed medications, allergies, and history unchanged via portal, 2 days pre-visit — no staff or AI outreach involved.'},
+ {type:'fields', sequence:[
+ ['demographics',{cls:'f-auto', label:'Identity & Demographics', value:'512 Willow Creek Dr, Plano TX', tag:'Auto-Resolved'}],
+ ['insurance',{cls:'f-auto', label:'Insurance & RTE', value:'Cigna HealthSpring · Active · $35 copay', tag:'Auto-Resolved'}],
+ ['consent',{cls:'f-auto', label:'Consent & Intake', value:'On file — valid, no re-sign', tag:'Auto-Resolved'}],
+ ['copay',{cls:'f-auto', label:'Copay / Payment', value:'$35 estimated', tag:'Auto-Resolved'}],
+ ['medications',{cls:'f-updated', label:'Medications', value:'Lisinopril 10mg daily, Atorvastatin 20mg nightly — confirmed, no changes', tag:'Confirmed via MyChart'}],
+ ['allergies',{cls:'f-updated', label:'Allergies', value:'Penicillin — rash — confirmed, no changes', tag:'Confirmed via MyChart'}],
+ ['medicalHistory',{cls:'f-updated', label:'Medical History', value:'Hypertension, hyperlipidemia — confirmed, no changes', tag:'Confirmed via MyChart'}]
+ ]},
+ {type:'status', text:'7 of 7 fields resolved — 4 auto, 3 self-confirmed via MyChart — zero outreach, zero staff time', cls:'st-done'}
+ ]},
+ { step:'outreach', trace:{state:'skipped', label:'Skipped', detail:{'Reason':'All required fields already resolved in Auto-Resolution'},
+ note:'No outreach message was ever sent — nothing was left to ask Elena.'},
+ phases:[ {type:'status', text:'Not needed — nothing left to resolve upstream', cls:'st-skip'} ]},
+ { step:'kiosk', trace:{state:'skipped', label:'Skipped', detail:{'Reason':'Resolved before arrival'},
+ note:'Elena arrives already checked in — the kiosk has nothing to do.'},
+ phases:[ {type:'status', text:'Not needed — Elena arrives fully checked in', cls:'st-skip'} ]},
+ { step:'frontdesk', trace:{state:'skipped', label:'Skipped', detail:{'Staff time spent':'0 minutes'},
+ note:'No staff member ever touches this encounter.'},
+ phases:[ {type:'status', text:'Not needed — zero front-desk involvement', cls:'st-skip'} ]},
+ { step:'exception', trace:{state:'done', label:'No Exceptions', detail:{'Exceptions flagged':'None'},
+ note:'Nothing required a human judgment call.'},
+ phases:[ {type:'status', text:'Check-in complete — no exceptions', cls:'st-done'} ]}
+ ]
+ },
+ { // 1 — Marcus Webb: Auto-Resolution flags 4 stale fields, SMS outreach closes
+ // all of them before he ever arrives — so like Elena, landing on his record
+ // shows the finished waterfall directly, but unlike Elena there WAS a real
+ // conversation (the SMS thread), so that gets preserved and shown in the
+ // AI Check-In Assistant transcript too, not just the trace cards.
+ name:'Marcus Webb',
+ tagline:'Auto-resolution flags 4 items — closed via Two way SMS AI outreach',
+ patient:{name:'Marcus Webb', dob:'11/08/1992', gender:'Male', mrn:'MRN-70311', avatar:'MW', avatarUnknown:false, preferredChannel:'SMS'},
+ preResolved:true,
+ beats:[
+ { step:'auto', trace:{state:'exception', detail:{'EHR Match':'Existing patient — MRN-70311 (auto-matched)', 'RTE Result':'Inactive — plan ended 01/2026', 'Consent':'Expired — past annual re-sign window', 'Fields resolved':'0 of 4 — all 4 flagged for outreach', 'Clinical history':'3 of 3 on file — will be reconfirmed during SMS outreach'},
+ note:'Identity resolves instantly from history, but the insurance on file is inactive, consent has expired, and the address on file is unconfirmed — automation alone can’t safely resolve any of it, so all 4 fields get flagged and routed to Marcus’s preferred channel. Medications, allergies, and medical history are already current on file, but get a routine reconfirm during the same SMS thread anyway.'},
+ phases:[
+ {type:'status', text:'Running Auto-Resolution — matching against EHR…', cls:'st-working'},
+ {type:'connect', system:'EHR', label:'Epic Care Everywhere', result:'success', ms:900},
+ {type:'identity', data:{name:'Marcus Webb', sub:'DOB 11/08/1992 · MRN-70311', avatar:'MW', avatarUnknown:false, confClass:'conf-high', confVal:'96%'}},
+ {type:'status', text:'Calling Optum Real-Time Eligibility…', cls:'st-working'},
+ {type:'api', method:'POST', endpoint:'/v3/eligibility/check', payer:'Cigna HealthSpring (on file)', result:'exception', latencyTarget:2.9,
+ resultLabel:'Inactive — plan ended 01/2026', resultDetail:'On-file payer no longer active; needs updated insurance'},
+ {type:'sys', label:'Consent Check', status:'Expired', tone:'warn', detail:'Last signed 14 months ago — past the annual re-sign window.'},
+ {type:'fields', sequence:[
+ ['demographics',{cls:'f-exception', label:'Identity & Demographics', value:'842 Cedar Park Ln, Frisco TX (on file — unconfirmed)', tag:'Flagged for outreach', needsStaff:true, askHint:'Address Unconfirmed'}],
+ ['insurance',{cls:'f-exception', label:'Insurance & RTE', value:'Cigna HealthSpring — inactive, plan ended 01/2026', tag:'Flagged for outreach', needsStaff:true, askHint:'Insurance Inactive'}],
+ ['consent',{cls:'f-exception', label:'Consent & Intake', value:'Expired — last signed 14 months ago', tag:'Flagged for outreach', needsStaff:true, askHint:'Consent Expired'}],
+ ['copay',{cls:'f-exception', label:'Copay / Payment', value:'Cannot calculate — insurance unresolved', tag:'Flagged for outreach', needsStaff:true, askHint:'Copay Pending'}],
+ ['medications',{cls:'f-auto', label:'Medications', value:'Sertraline 50mg daily (on file)', tag:'Auto-Resolved'}],
+ ['allergies',{cls:'f-auto', label:'Allergies', value:'NKDA — no known drug allergies (on file)', tag:'Auto-Resolved'}],
+ ['medicalHistory',{cls:'f-auto', label:'Medical History', value:'No significant history on file', tag:'Auto-Resolved'}]
+ ]},
+ {type:'status', text:'0 of 4 fields resolved — flagging insurance, consent & address for preferred-channel outreach', cls:'st-exception'}
+ ]},
+ { step:'outreach', trace:{state:'done', detail:{'Channel':'SMS (patient preferred)', 'Fields resolved':'4 of 4 via SMS thread', 'Duration':'~3 minutes, patient-paced', 'Clinical history':'Confirmed via SMS — no changes'},
+ note:'Everything Auto-Resolution couldn’t confirm got resolved in one text thread — no kiosk visit, no front-desk time. The Two way SMS AI also routinely reconfirmed medications and allergies before wrapping up.'},
+ phases:[
+ {type:'status', text:'Sending SMS via AI Check-In Assistant — preferred channel: SMS', cls:'st-listening'},
+ {type:'channelStatus', channel:'SMS', attempt:1, of:3, result:'trying'},
+ {type:'transcript', messages:[
+ {who:'staff', label:'Two way SMS AI', text:'Hi Marcus! Quick check-in ahead of Thursday’s visit — are you still at 842 Cedar Park Ln, Frisco TX?'},
+ {who:'patient', text:'Actually I moved — new address is 118 Birchwood Ave, Frisco TX 75034.'}
+ ]},
+ {type:'fields', sequence:[
+ ['demographics',{cls:'f-updated', label:'Identity & Demographics', value:'118 Birchwood Ave, Frisco TX 75034', tag:'Confirmed via SMS'}]
+ ]},
+ {type:'channelStatus', channel:'SMS', attempt:1, of:3, result:'responded'},
+ {type:'transcript', messages:[
+ {who:'staff', label:'Two way SMS AI', text:'Thanks! Also, the insurance on file shows as inactive — what’s your current carrier and member ID?'},
+ {who:'patient', text:'Blue Cross Blue Shield PPO, member ID BW-552901.'}
+ ]},
+ {type:'status', text:'Calling Optum Real-Time Eligibility…', cls:'st-working'},
+ {type:'api', method:'POST', endpoint:'/v3/eligibility/check (retry)', payer:'BCBS PPO · BW-552901', result:'ok', latencyTarget:2.4,
+ resultLabel:'Active · In-Network', resultDetail:'$40 copay · $150 deductible remaining'},
+ {type:'fields', sequence:[
+ ['insurance',{cls:'f-updated', label:'Insurance & RTE', value:'BCBS PPO · Active · $40 copay', tag:'Confirmed via SMS'}],
+ ['copay',{cls:'f-updated', label:'Copay / Payment', value:'$40 estimated — paid via SMS link', tag:'Confirmed via SMS'}]
+ ]},
+ {type:'transcript', messages:[
+ {who:'staff', label:'Two way SMS AI', text:'Last thing — your consent on file has expired. Tap below to re-sign.'}
+ ]},
+ {type:'interactive', mode:'signature', prompt:'Consent expired — tap to capture Marcus’s e-signature via the SMS link.', primaryLabel:'Tap to Sign', secondaryLabel:'Assign to Staff'},
+ {type:'fields', sequence:[
+ ['consent',{cls:'f-updated', label:'Consent & Intake', value:'Re-signed via SMS link', tag:'Confirmed via SMS'}]
+ ]},
+ {type:'transcript', messages:[
+ {who:'staff', label:'Two way SMS AI', text:'Last thing — any new medications or allergies we should know about since your last visit?'},
+ {who:'patient', text:'Nope, no changes — still just my usual meds, no new allergies.'}
+ ]},
+ {type:'fields', sequence:[
+ ['medications',{cls:'f-updated', label:'Medications', value:'Sertraline 50mg daily — confirmed, no changes', tag:'Confirmed via SMS'}],
+ ['allergies',{cls:'f-updated', label:'Allergies', value:'NKDA — confirmed, no changes', tag:'Confirmed via SMS'}],
+ ['medicalHistory',{cls:'f-updated', label:'Medical History', value:'No significant history — confirmed, no changes', tag:'Confirmed via SMS'}]
+ ]},
+ {type:'status', text:'4 of 4 fields resolved via SMS — cascade stops here', cls:'st-done'}
+ ]},
+ { step:'kiosk', trace:{state:'skipped', label:'Skipped', detail:{'Reason':'Fully resolved via SMS before arrival'},
+ note:'Marcus arrives already checked in.'},
+ phases:[ {type:'status', text:'Not needed — Marcus arrives fully checked in', cls:'st-skip'} ]},
+ { step:'frontdesk', trace:{state:'skipped', label:'Skipped', detail:{'Staff time spent':'0 minutes'},
+ note:'SMS closed every open item — no staff member ever touches this encounter.'},
+ phases:[ {type:'status', text:'Not needed — zero front-desk involvement', cls:'st-skip'} ]},
+ { step:'exception', trace:{state:'done', label:'No Exceptions', detail:{'Exceptions flagged':'None'},
+ note:'Nothing required a human judgment call.'},
+ phases:[ {type:'status', text:'Check-in complete — no exceptions', cls:'st-done'} ]}
+ ]
+ },
+ { // 2 — Diane Foster: full cascade — Voice AI goes unanswered, kiosk is
+ // skipped, front desk ambient listening resolves everything in one
+ // conversation, one true exception remains.
+ name:'Diane Foster',
+ tagline:'Full cascade — Voice AI miss → front desk (ambient) → exception',
+ patient:{name:'Diane Foster', dob:'09/02/1968', gender:'Female', mrn:'MRN-63590', avatar:'DF', avatarUnknown:false, preferredChannel:'SMS'},
+ beats:[
+ { step:'auto', trace:{state:'exception', detail:{'EHR Match':'Existing patient — MRN-63590 (auto-matched)', 'RTE Result':'Terminated 03/01/2026 — on-file payer inactive', 'Fields resolved':'2 of 4 — insurance & copay routed downstream', 'Clinical history':'Medications & allergies last recorded 6 months ago — flagged for reconfirmation, not assumed current'},
+ note:'Demographics and consent are still good from file; the insurance on file has lapsed, so copay can’t be estimated until that’s fixed. Medications and allergies are old enough (6 months) that they’re flagged for a quick reconfirm too, instead of being assumed unchanged.'},
+ phases:[
+ {type:'status', text:'Running Auto-Resolution — matching against EHR…', cls:'st-working'},
+ {type:'connect', system:'EHR', label:'Epic Care Everywhere', result:'success', ms:1000},
+ {type:'identity', data:{name:'Diane Foster', sub:'DOB 09/02/1968 · MRN-63590', avatar:'DF', avatarUnknown:false, confClass:'conf-high', confVal:'98%'}},
+ {type:'status', text:'Calling Optum Real-Time Eligibility…', cls:'st-working'},
+ {type:'api', method:'POST', endpoint:'/v3/eligibility/check', payer:'Aetna Medicare (on file)', result:'exception', latencyTarget:3.4,
+ resultLabel:'Terminated 03/01/2026', resultDetail:'Coverage lapsed — cannot confirm copay on this payer'},
+ {type:'sys', label:'Consent Check', status:'On File — Valid', tone:'ok', detail:'Signed 1 year ago · no re-sign required.'},
+ {type:'fields', sequence:[
+ ['demographics',{cls:'f-auto', label:'Identity & Demographics', value:'29 Hollow Ridge Ct, Frisco TX', tag:'Auto-Resolved'}],
+ ['consent',{cls:'f-auto', label:'Consent & Intake', value:'On file — valid', tag:'Auto-Resolved'}],
+ ['insurance',{cls:'f-exception', label:'Insurance & RTE', value:'Aetna Medicare — terminated 03/01/2026', tag:'Needs new insurance', needsStaff:true, askHint:'Insurance Expired'}],
+ ['medications',{cls:'f-stale', label:'Medications', value:'Lisinopril 20mg daily (on file — recorded 6 months ago)', tag:'Needs reconfirmation', needsStaff:true, askHint:'Medications — 6 Mo. Old'}],
+ ['allergies',{cls:'f-stale', label:'Allergies', value:'NKDA — no known drug allergies (on file — recorded 6 months ago)', tag:'Needs reconfirmation', needsStaff:true, askHint:'Allergies — 6 Mo. Old'}],
+ ['medicalHistory',{cls:'f-auto', label:'Medical History', value:'Hypertension (on file)', tag:'Auto-Resolved'}]
+ ]},
+ {type:'status', text:'2 of 4 resolved — insurance lapse routed to preferred-channel outreach', cls:'st-exception'}
+ ]},
+ { step:'outreach', trace:{state:'exception', label:'No Response', detail:{'Channel':'SMS → SMS → Voice (3 touches, spread across 7 days)', 'Cadence':'SMS at 7 days out, SMS at 3 days out, Voice (preferred channel) day-of', 'Attempts':'2 SMS + 1 voice call — no response on either channel', 'Fields resolved':'0 of 2 — cascading to clinic self check-in'},
+ note:'SMS — Diane’s preferred channel — opens the cascade at 7 days out and again at 3 days out, then escalates to one final Voice call on the day of the visit if she still hasn’t responded. 3 total touches spread across the full 7-day window, inside a compliant weekly contact ceiling. Still no response on any of them, so the remaining items simply wait for the next stage instead of stalling the visit.'},
+ phases:[
+ {type:'status', text:'Sending SMS via AI Check-In Assistant…', cls:'st-listening'},
+ {type:'channelStatus', channel:'SMS', attempt:1, of:2, result:'trying'},
+ {type:'sys', label:'Two way SMS AI — Attempt 1 (7 days before visit)', status:'No Response', tone:'warn', detail:'Text sent · no reply within window.'},
+ {type:'channelStatus', channel:'SMS', attempt:1, of:2, result:'no-answer'},
+ {type:'wait', ms:300},
+ {type:'channelStatus', channel:'SMS', attempt:2, of:2, result:'trying'},
+ {type:'sys', label:'Two way SMS AI — Attempt 2 (3 days before visit)', status:'No Response', tone:'warn', detail:'Text sent · no reply within window.'},
+ {type:'channelStatus', channel:'SMS', attempt:2, of:2, result:'no-answer'},
+ {type:'wait', ms:300},
+ {type:'status', text:'No response to either text — escalating to a final Voice AI attempt on day of visit', cls:'st-listening'},
+ {type:'channelStatus', channel:'Voice', attempt:1, of:1, result:'trying'},
+ {type:'sys', label:'Voice AI — Attempt 1 (day of visit)', status:'No Answer', tone:'warn', detail:'Call unanswered after 6 rings · voicemail left — no further attempts.'},
+ {type:'channelStatus', channel:'Voice', attempt:1, of:1, result:'no-answer'},
+ {type:'wait', ms:300},
+ {type:'status', text:'No response on either channel — resolving at check-in instead', cls:'st-manual'}
+ ]},
+ { step:'kiosk', trace:{state:'skipped', label:'Skipped', detail:{'Reason':'Voice/SMS both went unanswered — resolved directly at front desk instead'},
+ note:'No kiosk touchpoint for Diane this visit — with both automated channels unanswered, everything gets picked up in one ambient-listening conversation at check-in instead of a separate kiosk step.'},
+ phases:[ {type:'status', text:'Not needed — resolving directly at front desk', cls:'st-skip'} ]
+ },
+ { step:'frontdesk', trace:{state:'done', detail:{'Method':'Front desk staff + ambient listening', 'Fields resolved':'2 of 2 remaining — insurance & copay confirmed', 'Clinical history':'Medications & allergies reconfirmed via ambient listening', 'Staff clicks':'1 (confirm)'},
+ note:'With no kiosk step this visit, ambient listening picks up everything in one conversation — the new insurance plan, the group number straight off the card, and a quick medication/allergy reconfirm — the staff member never typed a field, just confirmed once.'},
+ phases:[
+ {type:'status', text:'Front desk notified — ambient listening active', cls:'st-listening'},
+ {type:'transcript', messages:[
+ {who:'staff', label:'Front Desk Staff', text:'Hi Diane, welcome back! We show your Aetna Medicare plan as inactive — is that still your coverage?'},
+ {who:'patient', text:'No, I switched to UnitedHealthcare Medicare Advantage back in March.'}
+ ]},
+ {type:'aiField', form:'Front Desk Ambient Capture', label:'Insurance', value:'UnitedHealthcare Medicare Advantage'},
+ {type:'fields', sequence:[
+ ['insurance',{cls:'f-updated', label:'Insurance & RTE', value:'UnitedHealthcare Medicare Advantage', tag:'AI Extracted'}]
+ ]},
+ {type:'transcript', messages:[
+ {who:'staff', label:'Front Desk Staff', text:'Great — one more thing, could you read me the group number off your card?'},
+ {who:'patient', text:'Sure — group number is GRP-88213, and my member ID is UHC-7734829.'}
+ ]},
+ {type:'aiField', form:'Front Desk Ambient Capture', label:'Group Number', value:'GRP-88213'},
+ {type:'fields', sequence:[
+ ['groupNumber',{cls:'f-updated', label:'Group Number', value:'GRP-88213', tag:'AI Extracted'}]
+ ]},
+ {type:'aiField', form:'Front Desk Ambient Capture', label:'Member ID', value:'UHC-7734829'},
+ {type:'fields', sequence:[
+ ['memberId',{cls:'f-updated', label:'Member ID', value:'UHC-7734829', tag:'AI Extracted'}]
+ ]},
+ {type:'status', text:'Calling Optum Real-Time Eligibility…', cls:'st-working'},
+ {type:'api', method:'POST', endpoint:'/v3/eligibility/check (retry)', payer:'UnitedHealthcare Medicare Advantage', result:'ok', latencyTarget:2.2,
+ resultLabel:'Active · In-Network', resultDetail:'Verified via Optum Real'},
+ {type:'fields', sequence:[
+ ['insurance',{cls:'f-updated', label:'Insurance & RTE', value:'UnitedHealthcare Medicare Advantage · Active', tag:'Confirmed via Optum Real'}]
+ ]},
+ {type:'transcript', messages:[
+ {who:'staff', label:'Front Desk Staff', text:'Thanks. And any new medications or allergies since your last visit?'},
+ {who:'patient', text:'No changes — still just my blood pressure medication, no new allergies.'}
+ ]},
+ {type:'status', text:'Calculating Copay with verified plan details…', cls:'st-working'},
+ {type:'api', method:'POST', endpoint:'/v3/eligibility/check (card-verified)', payer:'UnitedHealthcare Medicare Advantage · GRP-88213', result:'ok', latencyTarget:1.8,
+ resultLabel:'Balance Confirmed', resultDetail:'$0 copay · Medicare Advantage · verified card on file'},
+ {type:'fields', sequence:[
+ ['copay',{cls:'f-updated', label:'Copay / Payment', value:'$0 copay — confirmed at front desk', tag:'Confirmed via Ambient Listening'}],
+ ['medications',{cls:'f-updated', label:'Medications', value:'Lisinopril 20mg daily — confirmed, no changes', tag:'Confirmed via Ambient Listening'}],
+ ['allergies',{cls:'f-updated', label:'Allergies', value:'NKDA — confirmed, no changes', tag:'Confirmed via Ambient Listening'}]
+ ]},
+ {type:'interactive', mode:'confirm', prompt:'Ambient listening captured the new insurance details. Confirm to finish check-in.', primaryLabel:'Confirm & Continue', secondaryLabel:'Correct Manually'},
+ {type:'status', text:'Confirmed — 1 click from staff, zero typing', cls:'st-done'}
+ ]},
+ { step:'exception', trace:{state:'exception', detail:{'Item':'Prior balance under terminated Aetna coverage', 'Action':'Routed to financial counselor for manual claims review', 'Blocks visit?':'No'},
+ note:'The one thing true automation and ambient listening can’t safely resolve — an old claim under a terminated plan — gets flagged for a human specialist instead of stalling today’s visit.'},
+ phases:[
+ {type:'status', text:'Scanning for legacy balances…', cls:'st-working'},
+ {type:'sys', label:'Legacy Balance Check', status:'Flagged', tone:'warn', detail:'Open balance under terminated Aetna Medicare coverage (dates of service before 03/01/2026) · routed to financial counselor.'},
+ {type:'status', text:'Check-in complete — 1 item flagged for manual follow-up, visit not blocked', cls:'st-done'}
+ ]}
+ ]
+ }
+];
+
+// ── Confirmed AI-suggestion overrides ───────────────────────────────
+// When staff confirm the "Next Best AI-Suggested Action" for a scenario,
+// that suggestion becomes the default behavior on the patient's next visit.
+// Keyed by scenario index → step, each override replaces the normal beat
+// for that step the next time the scenario plays. Only scenarios with a
+// concretely actionable suggestion (not a general policy note) get one.
+const CONFIRMED_VARIANTS = {
+ 2: { // Diane Foster — AI suggested using her ambient-captured preferred callback time
+ outreach: {
+ trace: {state:'done', detail:{'Channel':'Voice (patient-confirmed channel & time — before 9:00 AM)', 'Attempts':'1 automated call — answered within her stated window', 'Fields resolved':'2 of 2 via Voice AI', 'Clinical history':'Confirmed via Voice — no changes'},
+ note:'Diane told front desk staff last visit that she prefers a call over text, mornings before 9 — ambient listening captured both her channel and time preference, so this visit skips the SMS attempts entirely and calls her directly within that window. She answered on the first try, and Voice AI also reconfirmed medications and allergies before wrapping up.'},
+ phases:[
+ {type:'status', text:'Calling via Diane’s confirmed preferred channel (Voice) — within her confirmed window (before 9:00 AM)', cls:'st-listening'},
+ {type:'channelStatus', channel:'Voice', attempt:1, of:1, result:'trying'},
+ {type:'sys', label:'Voice AI — Attempt 1 (8:45 AM, patient-confirmed window)', status:'Answered', tone:'ok', detail:'Call answered on the first ring — patient-confirmed time worked.'},
+ {type:'channelStatus', channel:'Voice', attempt:1, of:1, result:'responded'},
+ {type:'transcript', messages:[
+ {who:'staff', label:'Voice AI', text:'Hi Diane, quick check ahead of your visit — we show your Aetna Medicare plan as inactive. Is that still your coverage?'},
+ {who:'patient', text:'No, I switched to UnitedHealthcare Medicare Advantage back in March.'}
+ ]},
+ {type:'status', text:'Calling Optum Real-Time Eligibility…', cls:'st-working'},
+ {type:'api', method:'POST', endpoint:'/v3/eligibility/check (retry)', payer:'UnitedHealthcare Medicare Advantage', result:'ok', latencyTarget:2.2,
+ resultLabel:'Active · In-Network', resultDetail:'$0 copay · Medicare Advantage plan'},
+ {type:'fields', sequence:[
+ ['insurance',{cls:'f-updated', label:'Insurance & RTE', value:'UnitedHealthcare Medicare Advantage · Active', tag:'Confirmed via Voice'}],
+ ['copay',{cls:'f-updated', label:'Copay / Payment', value:'$0 copay — confirmed via Voice', tag:'Confirmed via Voice'}]
+ ]},
+ {type:'transcript', messages:[
+ {who:'staff', label:'Voice AI', text:'Last thing — any new medications or allergies since your last visit?'},
+ {who:'patient', text:'No changes — still just my blood pressure medication, no new allergies.'}
+ ]},
+ {type:'fields', sequence:[
+ ['medications',{cls:'f-updated', label:'Medications', value:'Lisinopril 20mg daily — confirmed, no changes', tag:'Confirmed via Voice'}],
+ ['allergies',{cls:'f-updated', label:'Allergies', value:'NKDA — confirmed, no changes', tag:'Confirmed via Voice'}]
+ ]},
+ {type:'status', text:'2 of 2 fields resolved via Voice — cascade stops here', cls:'st-done'}
+ ]
+ },
+ kiosk: {
+ trace: {state:'skipped', label:'Skipped', detail:{'Reason':'Fully resolved via Voice before arrival'},
+ note:'Diane arrives already checked in — the kiosk has nothing to do.'},
+ phases:[ {type:'status', text:'Not needed — Diane arrives fully checked in', cls:'st-skip'} ]
+ },
+ frontdesk: {
+ trace: {state:'skipped', label:'Skipped', detail:{'Staff time spent':'0 minutes'},
+ note:'Voice closed every open item — no staff member ever touches this encounter.'},
+ phases:[ {type:'status', text:'Not needed — zero front-desk involvement', cls:'st-skip'} ]
+ }
+ }
+};
+
+const CONFIRMED_NEXT_ACTIONS = {
+ 2: 'Diane’s patient-confirmed outreach channel and callback window — a call, before 9:00 AM, captured via ambient listening at the front desk last visit — was applied automatically. Voice AI called inside that window and she answered on the first try, so the SMS attempts, kiosk, and front desk were never needed. This is now her default outreach channel and time going forward.'
+};
+
+// ── Next Best Action "ask" flow — for scenarios where the suggestion isn't
+// safe to auto-apply from a guess; staff must actually ask the patient first.
+// Clicking "Ask" plays a short simulated exchange (ambient listening capturing
+// the patient's answer) directly inside the Next Best Action card, then staff
+// gets a second, explicit confirm step to lock the answer in for next visit.
+// Only scenarios listed here get the two-step flow — everyone else keeps the
+// single confirm button.
+const NEXT_ACTION_ASK = {
+ 2: {
+ askLabel: 'Ask Diane for preferred channel & time',
+ exchange: [
+ {who:'staff', text:'Quick one before you head out — do you prefer we text or call you before your next visit, and is there a better time?'},
+ {who:'patient', text:'A call actually works better for me — I don’t always see texts. Mornings, before 9, is best — I don’t hear my phone once I’m at my desk.'}
+ ],
+ askedText: 'Ambient listening captured Diane’s answer: she prefers a call over text, mornings before 9:00 AM. Confirm to make Voice her default outreach channel and that window her default time going forward.'
+ }
+};
+let askedCallback = {};
+
+// ── Player state ─────────────────────────────────────────────────────
+let scenarioIdx = 0;
+let playing = false;
+let paused = false;
+let appliedSuggestions = {};
+let stepState = {};
+let identityState = null;
+let fieldsState = {};
+let editingFieldKey = null;
+let bulkEditMode = false;
+let aiIdentityFields = {};
+let editingAiFieldKey = null;
+let autofillFieldsState = {};
+let stepSysLog = {};
+let sysEntrySeq = 0;
+let interactiveUI = {};
+let currentBeatStep = null;
+let collapsedSteps = {};
+let lastHighlightStep = null;
+let interactiveResolve = null;
+let runToken = 0;
+let activeFormEl = null;
+let activeFormTitle = null;
+let formFieldResolve = null;
+let formFieldFallback = '';
+
+// Single knob for live-demo pacing. Applies to every pause/transition in the
+// player (status changes, field reveals, transcript gaps) so presenters have
+// enough time to narrate each step. Does NOT touch the RTE/EHR "Xs" latency
+// countdowns (tickSysTimer) — those stay realistic on purpose. Raise for a
+// slower walkthrough, lower back toward 1 for a fast unattended replay.
+const DEMO_SPEED = 2.3;
+
+function wait(ms){
+ ms = ms * DEMO_SPEED;
+ return new Promise(resolve => {
+ let elapsed = 0;
+ const myToken = runToken;
+ const tick = () => {
+ if (myToken !== runToken) { resolve(); return; }
+ if (paused) { setTimeout(tick, 120); return; }
+ elapsed += 120;
+ if (elapsed >= ms) resolve(); else setTimeout(tick, 120);
+ };
+ tick();
+ });
+}
+
+function stateToPillCls(state){
+ return { done:'pill-done', active:'pill-active', exception:'pill-exception',
+ blocked:'pill-blocked', manual:'pill-manual', legal:'pill-legal',
+ needstaff:'pill-active', skipped:'pill-skip' }[state] || 'pill-pending';
+}
+function stateToPillLabel(state){
+ return { done:'Resolved', active:'In Progress', exception:'Flagged',
+ blocked:'Deferred', manual:'Manual', legal:'Policy Applied',
+ needstaff:'Needs Staff', skipped:'Skipped' }[state] || 'Pending';
+}
+
+const TRACE_CHEVRON_SVG = '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M6 9 L12 15 L18 9" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+// Given a step key, look at that beat's own 'fields' phases and return the
+// specific fields it left unresolved (needsStaff, or an exception/none-style
+// class). Used to surface a quick "Ask: ..." hint on collapsed cards, so
+// staff can see what still needs confirming from the patient without having
+// to expand every step — the field widget inside the card already shows this
+// in color while expanded, but that's invisible once collapsed. Prefers each
+// field's short staff-facing `askHint` (e.g. "Insurance Expired") over its
+// generic widget label (e.g. "Insurance & RTE"), since the hint is meant to
+// read like a prompt, not a form field name.
+function stepUnresolvedFields(stepKey){
+ const scenario = SCENARIOS[scenarioIdx];
+ const beat = scenario && scenario.beats.find(b => b.step === stepKey);
+ if (!beat) return [];
+ const out = [];
+ const seen = new Set();
+ beat.phases.forEach(phase => {
+ if (phase.type !== 'fields') return;
+ phase.sequence.forEach(([key, data]) => {
+ const unresolved = data.needsStaff || data.cls === 'f-exception' || data.cls === 'f-none';
+ if (unresolved && !seen.has(key)) {
+ seen.add(key);
+ out.push({ key, hint: data.askHint || data.label || FIELD_LABELS[key] || key });
+ }
+ });
+ });
+ return out;
+}
+
+// Collapse state per step. Absence of a key means "use the default" (collapse
+// once a step is done and no longer active); an explicit true/false means the
+// user has manually toggled that card and their choice should stick.
+function isStepCollapsed(stepKey, highlightStep, reached){
+ if (Object.prototype.hasOwnProperty.call(collapsedSteps, stepKey)) return collapsedSteps[stepKey];
+ if (!reached) return false;
+ if (stepKey === highlightStep) return false;
+ return true;
+}
+
+function toggleTraceItem(stepKey){
+ const reached = !!stepState[stepKey];
+ const current = isStepCollapsed(stepKey, lastHighlightStep, reached);
+ collapsedSteps[stepKey] = !current;
+ renderTrace(lastHighlightStep);
+}
+
+function renderTrace(highlightStep){
+ lastHighlightStep = highlightStep;
+ document.getElementById('traceList').innerHTML = STEPS.map((s, idx) => {
+ const data = stepState[s.key];
+ const st = data?.state;
+ const pillCls = stateToPillCls(st);
+ const pillLabel = data?.label || stateToPillLabel(st);
+ const reached = !!data;
+ const hl = (s.key === highlightStep) ? ' hl' : '';
+ const collapsed = isStepCollapsed(s.key, highlightStep, reached);
+ const body = data
+ ? Object.entries(data.detail || {}).map(([k,v]) =>
+ `<div class="trace-kv"><span class="trace-kv-label">${k}</span><span class="trace-kv-val">${v}</span></div>`
+ ).join('') + (data.note ? `<div class="trace-note">${data.note}</div>` : '')
+ : `<div class="trace-placeholder">Waiting for this stage…</div>`;
+ const aiFieldsSlot = (s.key === 'frontdesk') ? renderAiFieldsSlotHTML() : '';
+ const autofillFieldsSlot = (s.key === 'auto') ? renderAutofillFieldsSlotHTML() : '';
+ const sysSlot = renderSysSlotHTML(s.key);
+ const actionSlot = (s.key === 'frontdesk' || s.key === 'outreach') ? renderActionSlotHTML(s.key) : '';
+ // Only surface the hint once the card is actually collapsed — while
+ // expanded, the field widget inside already shows the same thing in
+ // place (colored red), so this would just be a duplicate.
+ const unresolved = (collapsed && reached) ? stepUnresolvedFields(s.key) : [];
+ const collapsedHint = unresolved.length
+ ? `<span class="trace-collapsed-hint">${unresolved.map(u => u.hint).join(', ')}</span>`
+ : '';
+ return `<div class="trace-item ${reached ? 'reached' : ''}${hl}${collapsed ? ' collapsed' : ''}">
+ <div class="trace-item-head" onclick="toggleTraceItem('${s.key}')">
+ <span class="trace-num">${idx+1}</span>
+ <div class="trace-title-block">
+ <span class="trace-title">${s.label.replace(/^\d+\s/, '')}</span>
+ ${collapsedHint}
+ </div>
+ <span class="pill ${pillCls}">${pillLabel}</span>
+ <span class="trace-chevron">${TRACE_CHEVRON_SVG}</span>
+ </div>
+ <div class="trace-item-body">${aiFieldsSlot}${autofillFieldsSlot}${sysSlot}${body}${actionSlot}</div>
+ </div>`;
+ }).join('');
+
+ // As each step becomes active, bring it into view automatically — keeps
+ // the audience's eyes on whichever step is currently happening instead of
+ // requiring a manual scroll during the demo.
+ if (highlightStep) {
+ const hlEl = document.querySelector('.trace-item.hl');
+ if (hlEl && typeof hlEl.scrollIntoView === 'function') {
+ hlEl.scrollIntoView({behavior:'smooth', block:'center'});
+ }
+ }
+}
+
+function renderIdentity(){
+ const el = document.getElementById('avatar');
+ const nameEl = document.getElementById('idName');
+ const subEl = document.getElementById('idSub');
+ const confEl = document.getElementById('confBadge');
+ if (!identityState) {
+ el.className = 'avatar unknown'; el.textContent = '—';
+ nameEl.textContent = 'Awaiting verification';
+ subEl.textContent = 'Awaiting EHR/RTE validation';
+ confEl.className = 'conf-badge conf-none'; confEl.textContent = '—';
+ return;
+ }
+ el.className = 'avatar pop' + (identityState.avatarUnknown ? ' unknown' : '');
+ el.textContent = identityState.avatar;
+ nameEl.textContent = identityState.name;
+ subEl.textContent = identityState.sub;
+ confEl.className = 'conf-badge ' + identityState.confClass;
+ confEl.textContent = identityState.confVal;
+ setTimeout(() => el.classList.remove('pop'), 450);
+}
+
+function escAttr(s){
+ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+}
+
+function renderFields(justFilledKeys){
+ document.getElementById('fieldsGrid').innerHTML = FIELD_ORDER.map(k => {
+ const f = fieldsState[k];
+ const label = (f && f.label) || FIELD_LABELS[k] || k;
+
+ if (bulkEditMode) {
+ const current = f ? f.value : '';
+ return `<div class="field-card f-editing">
+ <div class="field-label">${label}</div>
+ <input class="field-edit-input bulk-edit-input" id="bulkEditInput_${k}" value="${escAttr(current)}" />
+ </div>`;
+ }
+
+ if (editingFieldKey === k) {
+ const current = f ? f.value : '';
+ return `<div class="field-card f-editing">
+ <div class="field-label">${label}</div>
+ <input class="field-edit-input" id="fieldEditInput" value="${escAttr(current)}" onkeydown="handleFieldEditKey(event,'${k}')" />
+ <div class="field-edit-actions">
+ <button class="field-edit-save" onclick="saveEditField('${k}')">Save</button>
+ <button class="field-edit-cancel" onclick="cancelEditField()">Cancel</button>
+ </div>
+ </div>`;
+ }
+
+ if (!f) {
+ return `<div class="field-card f-none">
+ <div class="field-label">${label}</div>
+ <div class="field-value">Not yet captured</div>
+ <div class="field-tag-row"><div class="field-tag">Not yet captured</div><button class="field-edit-btn" onclick="startEditField('${k}')">Edit</button></div>
+ </div>`;
+ }
+ const jf = justFilledKeys && justFilledKeys.includes(k) ? ' just-filled' : '';
+ const ns = f.needsStaff ? ' needs-staff' : '';
+ const flag = f.needsStaff ? `<span class="field-flag">Review</span>` : '';
+ return `<div class="field-card ${f.cls}${jf}${ns}">${flag}
+ <div class="field-label">${label}</div>
+ <div class="field-value">${f.value}</div>
+ <div class="field-tag-row"><div class="field-tag">${f.tag}</div><button class="field-edit-btn" onclick="startEditField('${k}')">Edit</button></div>
+ </div>`;
+ }).join('');
+}
+
+function startEditField(key){
+ editingFieldKey = key;
+ renderFields();
+ const input = document.getElementById('fieldEditInput');
+ if (input) { input.focus(); input.select(); }
+}
+
+function cancelEditField(){
+ editingFieldKey = null;
+ renderFields();
+}
+
+function saveEditField(key){
+ const input = document.getElementById('fieldEditInput');
+ const newValue = input ? input.value.trim() : '';
+ editingFieldKey = null;
+ if (!newValue) { renderFields(); return; }
+ fieldsState[key] = {
+ cls: 'f-edited',
+ label: FIELD_LABELS[key] || key,
+ value: newValue,
+ tag: 'Edited by staff',
+ needsStaff: false
+ };
+ renderFields([key]);
+}
+
+function handleFieldEditKey(evt, key){
+ if (evt.key === 'Enter') { evt.preventDefault(); saveEditField(key); }
+ else if (evt.key === 'Escape') { evt.preventDefault(); cancelEditField(); }
+}
+
+function setStatus(text, cls){
+ const el = document.getElementById('liveStatus');
+ el.className = 'live-status ' + (cls || '');
+ document.getElementById('liveStatusText').textContent = text;
+}
+
+function setListen(mode){
+ const mic = document.getElementById('mic');
+ const badge = document.getElementById('listenBadge');
+ if (mode === 'active') { mic.classList.add('on'); badge.className = 'listen-badge listen-active'; badge.textContent = 'Chatting'; }
+ else if (mode === 'done') { mic.classList.remove('on'); badge.className = 'listen-badge listen-done'; badge.textContent = 'Complete'; }
+ else if (mode === 'declined') { mic.classList.remove('on'); badge.className = 'listen-badge listen-declined'; badge.textContent = 'Skipped'; }
+ else { mic.classList.remove('on'); badge.className = 'listen-badge listen-idle'; badge.textContent = 'Idle'; }
+}
+
+async function runTranscript(messages, opts){
+ opts = opts || {};
+ if (!messages || !messages.length) return;
+ const box = document.getElementById('transcript');
+ const empty = box.querySelector('.transcript-empty');
+ if (empty) empty.remove();
+ if (!opts.mute) setListen('active');
+
+ // Group consecutive same-speaker lines into one continuous growing turn —
+ // matches live ASR captioning, where a whole utterance streams into a
+ // single line under one speaker label rather than fragmenting into a new
+ // bubble per sentence.
+ const turns = [];
+ for (const m of messages) {
+ const last = turns[turns.length - 1];
+ if (last && last.who === m.who && last.label === (m.label || null)) { last.parts.push(m.text); }
+ else { turns.push({who: m.who, label: m.label || null, parts: [m.text]}); }
+ }
+
+ for (const turn of turns) {
+ const div = document.createElement('div');
+ div.className = 't-turn ' + turn.who;
+ const whoLabel = turn.label || {patient:'Patient', staff:'Front Desk Staff', ems:'Front Desk'}[turn.who] || turn.who;
+ div.innerHTML = `<div class="t-turn-head"><span class="t-turn-dot"></span>${whoLabel}</div><div class="t-turn-bubble"><span class="t-turn-text"></span><span class="cursor"></span></div>`;
+ box.appendChild(div);
+ box.scrollTop = box.scrollHeight;
+ const textEl = div.querySelector('.t-turn-text');
+ const full = turn.parts.join(' ');
+ let i = 0;
+ await new Promise(resolve => {
+ const myToken = runToken;
+ const iv = setInterval(() => {
+ if (myToken !== runToken) { clearInterval(iv); resolve(); return; }
+ if (paused) return;
+ i++;
+ textEl.textContent = full.slice(0, i);
+ box.scrollTop = box.scrollHeight;
+ if (i >= full.length) { clearInterval(iv); resolve(); }
+ }, 28 * DEMO_SPEED);
+ });
+ const cursor = div.querySelector('.cursor');
+ if (cursor) cursor.style.visibility = 'hidden';
+ await wait(300);
+ }
+ if (!opts.mute) setListen('done');
+}
+
+// Instant, non-animated version of runTranscript — used to reconstruct a
+// conversation that already happened (e.g. landing on a pre-resolved
+// patient's record) so the full exchange is visible immediately instead of
+// replaying the typing animation.
+function renderTranscriptStatic(messages){
+ if (!messages || !messages.length) return;
+ const box = document.getElementById('transcript');
+ const empty = box.querySelector('.transcript-empty');
+ if (empty) empty.remove();
+
+ const turns = [];
+ for (const m of messages) {
+ const last = turns[turns.length - 1];
+ if (last && last.who === m.who && last.label === (m.label || null)) { last.parts.push(m.text); }
+ else { turns.push({who: m.who, label: m.label || null, parts: [m.text]}); }
+ }
+
+ box.innerHTML += turns.map(turn => {
+ const whoLabel = turn.label || {patient:'Patient', staff:'Front Desk Staff', ems:'Front Desk'}[turn.who] || turn.who;
+ const full = turn.parts.join(' ');
+ return `<div class="t-turn ${turn.who}"><div class="t-turn-head"><span class="t-turn-dot"></span>${whoLabel}</div><div class="t-turn-bubble">${full}</div></div>`;
+ }).join('');
+ box.scrollTop = box.scrollHeight;
+}
+
+async function runFormField(phase){
+ const box = document.getElementById('transcript');
+ const empty = box.querySelector('.transcript-empty');
+ if (empty) empty.remove();
+
+ // Start a new form card the first time this title is used, or reuse the
+ // current one if the next field belongs to the same form.
+ if (!activeFormEl || activeFormTitle !== phase.form) {
+ activeFormEl = document.createElement('div');
+ activeFormEl.className = 'manual-form';
+ activeFormEl.innerHTML = `<div class="manual-form-title">${phase.form} — completed by patient</div>`;
+ box.appendChild(activeFormEl);
+ activeFormTitle = phase.form;
+ }
+ box.scrollTop = box.scrollHeight;
+
+ const row = document.createElement('div');
+ row.className = 'manual-form-row';
+ const placeholder = phase.value ? `e.g. ${phase.value}` : 'Type here…';
+ row.innerHTML = `<div class="manual-form-label">${phase.label}</div>
+ <div class="manual-form-input-wrap">
+ <input class="manual-form-input" id="formFieldInput" placeholder="${placeholder}" onkeydown="handleFormFieldKey(event)" />
+ <button class="manual-form-enter" onclick="submitFormField()">Enter</button>
+ </div>`;
+ activeFormEl.appendChild(row);
+ box.scrollTop = box.scrollHeight;
+
+ const input = row.querySelector('.manual-form-input');
+ input.focus();
+
+ // Waits for the presenter to actually type the value and press Enter (or
+ // click Enter) — this is real input, not a scripted animation. If they
+ // submit blank, fall back to the scripted value so the demo never stalls.
+ const typedValue = await new Promise(resolve => {
+ formFieldResolve = resolve;
+ formFieldFallback = phase.value || '';
+ });
+
+ row.innerHTML = `<div class="manual-form-label">${phase.label}</div><div class="manual-form-value">${typedValue}</div>`;
+ box.scrollTop = box.scrollHeight;
+ await wait(250);
+}
+
+function submitFormField(){
+ if (!formFieldResolve) return;
+ const input = document.getElementById('formFieldInput');
+ let val = input ? input.value.trim() : '';
+ if (!val) val = formFieldFallback || '';
+ const resolve = formFieldResolve;
+ formFieldResolve = null;
+ resolve(val);
+}
+
+function handleFormFieldKey(evt){
+ if (evt.key === 'Enter') { evt.preventDefault(); submitFormField(); }
+}
+
+const AI_SPARKLE_SVG = '<svg class="ai-sparkle-icon" viewBox="0 0 24 24" width="14" height="14"><path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" fill="currentColor"/></svg>';
+
+function renderNextAction(idx){
+ const panel = document.getElementById('legendPanel');
+ if (!panel) return;
+ const confirmed = !!appliedSuggestions[idx];
+ const askFlow = NEXT_ACTION_ASK[idx];
+ const askState = askedCallback[idx]; // undefined | 'listening' | true
+ const firstName = (SCENARIOS[idx].patient.name || '').split(' ')[0] || 'the patient';
+
+ let text = (confirmed && CONFIRMED_NEXT_ACTIONS[idx]) || NEXT_BEST_ACTIONS[idx] || '';
+ let actionHtml = '';
+
+ if (confirmed) {
+ actionHtml = `<div class="next-action-confirmed-note">✓ Applied — this is now how the AI will handle ${firstName}'s outreach next visit.</div>`;
+ } else if (askFlow && askState === 'listening') {
+ // Stage 2 — staff asked; the actual exchange plays out live in the
+ // Ambient Listening panel on the right, not inside this card.
+ actionHtml = `<div class="next-action-listening-note"><span class="next-action-listening-dot"></span>Listening for ${firstName}'s answer in Ambient Listening…</div>`;
+ } else if (askFlow && askState === true) {
+ // Stage 3 — Ambient Listening captured the answer; staff still has to
+ // explicitly confirm before it's applied to future visits.
+ text = askFlow.askedText;
+ actionHtml = `<button class="next-action-confirm-btn" onclick="confirmNextAction(${idx})">Confirm & apply next visit</button>`;
+ } else if (askFlow) {
+ // Stage 1 — nothing asked yet. Staff must trigger the ask themselves,
+ // it doesn't happen automatically as part of the encounter.
+ actionHtml = `<button class="next-action-confirm-btn" onclick="askNextAction(${idx})">${askFlow.askLabel}</button>`;
+ } else {
+ actionHtml = `<button class="next-action-confirm-btn" onclick="confirmNextAction(${idx})">Confirm suggestion — apply next visit</button>`;
+ }
+
+ panel.innerHTML = `<div class="next-action-card${confirmed ? ' confirmed' : ''}">
+ <span class="next-action-icon${confirmed ? ' confirmed' : ''}">${AI_SPARKLE_SVG}</span>
+ <div class="next-action-body">
+ <div class="next-action-title">${confirmed ? 'AI Suggestion — Confirmed & Applied' : 'Next Best AI-Suggested Action'}</div>
+ <div class="next-action-text">${text}</div>
+ ${actionHtml}
+ </div>
+ </div>`;
+}
+
+async function askNextAction(idx){
+ const flow = NEXT_ACTION_ASK[idx];
+ if (!flow) return;
+ askedCallback[idx] = 'listening';
+ renderNextAction(idx);
+ // The actual question/answer plays out as real turns in the Ambient
+ // Listening transcript on the right — this card just triggers it and
+ // waits, it never shows the conversation itself.
+ if (flow.exchange && flow.exchange.length) {
+ await runTranscript(flow.exchange);
+ }
+ askedCallback[idx] = true;
+ renderNextAction(idx);
+}
+
+function confirmNextAction(idx){
+ appliedSuggestions[idx] = true;
+ renderNextAction(idx);
+}
+
+function clearNextAction(){
+ const panel = document.getElementById('legendPanel');
+ if (panel) panel.innerHTML = '';
+}
+
+// ── AI-filled identity fields — persisted state so values survive beyond
+// the beat that fills them (they stay visible, and editable, for the rest
+// of the encounter instead of disappearing once the trace re-renders).
+function aiFieldSlug(label){
+ return 'aiField_' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+}
+
+function aiFieldRowHTML(label){
+ const f = aiIdentityFields[label];
+ if (!f) return '';
+ const rowId = aiFieldSlug(label);
+ if (editingAiFieldKey === label) {
+ return `<div class="ai-id-field ai-id-editing" id="${rowId}">
+ <div class="ai-id-label">${label}</div>
+ <input class="ai-id-edit-input" id="aiFieldEditInput" value="${escAttr(f.value)}" onkeydown="handleAiFieldEditKey(event,'${escAttr(label)}')" />
+ <div class="ai-id-edit-actions">
+ <button class="ai-id-edit-save" onclick="saveEditAiField('${escAttr(label)}')">Save</button>
+ <button class="ai-id-edit-cancel" onclick="cancelEditAiField()">Cancel</button>
+ </div>
+ </div>`;
+ }
+ const tagText = f.edited ? 'Edited by staff' : (f.active ? 'AI filling…' : 'AI extracted');
+ return `<div class="ai-id-field${f.edited ? ' ai-id-edited' : ''}" id="${rowId}">
+ <div class="ai-id-label">${label}</div>
+ <div class="ai-id-row">
+ <div class="ai-id-box"><span class="ai-id-value">${f.value}</span></div>
+ <span class="ai-id-sparkle${f.active ? ' active' : ''}">${AI_SPARKLE_SVG}</span>
+ </div>
+ <div class="ai-id-tag-row">
+ <div class="ai-id-tag">${tagText}</div>
+ <button class="ai-id-edit-btn" onclick="startEditAiField('${escAttr(label)}')">Edit</button>
+ </div>
+ </div>`;
+}
+
+function aiFieldRowsHTML(){
+ return AI_ID_FIELD_ORDER.map(aiFieldRowHTML).filter(Boolean).join('');
+}
+
+function renderAiFieldsSlotHTML(){
+ return `<div class="trace-ai-fields" id="traceAiFields">${aiFieldRowsHTML()}</div>`;
+}
+
+function rerenderAiFieldsSlot(){
+ const container = document.getElementById('traceAiFields');
+ if (!container) return;
+ container.innerHTML = aiFieldRowsHTML();
+}
+
+function startEditAiField(label){
+ editingAiFieldKey = label;
+ rerenderAiFieldsSlot();
+ const input = document.getElementById('aiFieldEditInput');
+ if (input) { input.focus(); input.select(); }
+}
+
+function cancelEditAiField(){
+ editingAiFieldKey = null;
+ rerenderAiFieldsSlot();
+}
+
+function saveEditAiField(label){
+ const input = document.getElementById('aiFieldEditInput');
+ const newValue = input ? input.value.trim() : '';
+ editingAiFieldKey = null;
+ if (!newValue) { rerenderAiFieldsSlot(); return; }
+ aiIdentityFields[label] = { value: newValue, edited: true, active: false };
+ rerenderAiFieldsSlot();
+}
+
+function handleAiFieldEditKey(evt, label){
+ if (evt.key === 'Enter') { evt.preventDefault(); saveEditAiField(label); }
+ else if (evt.key === 'Escape') { evt.preventDefault(); cancelEditAiField(); }
+}
+
+async function runAiField(phase){
+ // Renders into the Identity Resolution trace card on the left, not the
+ // transcript. Values are written into aiIdentityFields as they fill so
+ // they persist (and stay editable) even after the trace re-renders for
+ // later beats — only edits and future runs ever clear them.
+ if (!document.getElementById('traceAiFields')) return;
+
+ const label = phase.label;
+ aiIdentityFields[label] = { value: '', edited: false, active: true };
+ rerenderAiFieldsSlot();
+
+ const row = document.getElementById(aiFieldSlug(label));
+ const sparkle = row ? row.querySelector('.ai-id-sparkle') : null;
+ const valueEl = row ? row.querySelector('.ai-id-value') : null;
+
+ const value = phase.value;
+ let i = 0;
+ await new Promise(resolve => {
+ const myToken = runToken;
+ const iv = setInterval(() => {
+ if (myToken !== runToken) { clearInterval(iv); resolve(); return; }
+ if (paused) return;
+ i++;
+ const partial = value.slice(0, i);
+ if (valueEl) valueEl.textContent = partial;
+ aiIdentityFields[label].value = partial;
+ if (i >= value.length) { clearInterval(iv); resolve(); }
+ }, 20 * DEMO_SPEED);
+ });
+ await wait(200);
+ aiIdentityFields[label].active = false;
+ aiIdentityFields[label].value = value;
+ if (sparkle) sparkle.classList.remove('active');
+ rerenderAiFieldsSlot();
+}
+
+// ── Per-step system activity — light AI-sparkle cards embedded directly in
+// whichever trace card is currently playing, instead of a separate global
+// console. State-driven (like the AI/auto-fill field slots) so it survives
+// re-renders when the trace moves to the next step. The sparkle icon spins
+// while active and settles into a colored state (blue/gold/red) once the
+// call resolves, with a live elapsed-seconds readout throughout.
+function sysSlotSlug(stepKey){ return 'traceSysSlot_' + stepKey; }
+function sysEntryElId(entryId){ return 'actCard_' + entryId; }
+
+function sysEntryHTML(e){
+ return `<div class="act-card ${e.cls}" id="${sysEntryElId(e.id)}">
+ <div class="act-card-icon${e.active ? ' active' : ''}" id="${sysEntryElId(e.id)}_icon">${AI_SPARKLE_SVG}</div>
+ <div class="act-card-body">
+ <div class="act-card-label">${e.label}</div>
+ <div class="act-card-detail" id="${sysEntryElId(e.id)}_detail">${e.detail}</div>
+ </div>
+ <div class="act-card-time" id="${sysEntryElId(e.id)}_time">${e.time}</div>
+ </div>`;
+}
+
+// Full string render — used only by renderTrace()'s per-beat rebuild (and as
+// a fallback), so every step shows its already-resolved activity correctly
+// even though it isn't the one actively ticking right now.
+function renderSysSlotHTML(stepKey){
+ const arr = stepSysLog[stepKey] || [];
+ return `<div class="trace-sys-slot" id="${sysSlotSlug(stepKey)}">${arr.map(sysEntryHTML).join('')}</div>`;
+}
+
+function rerenderSysSlot(stepKey){
+ const container = document.getElementById(sysSlotSlug(stepKey));
+ if (!container) return;
+ const arr = stepSysLog[stepKey] || [];
+ container.innerHTML = arr.map(sysEntryHTML).join('');
+}
+
+// Appends a single new card without touching any cards already in the slot,
+// so earlier, already-settled activity never re-flashes or replays its
+// fade-in — only the brand-new card animates in.
+function beginSysEntry(stepKey, data){
+ const entry = Object.assign({ id: 'se' + (++sysEntrySeq), active:true, cls:'', label:'', detail:'', time:'0.0s' }, data);
+ if (!stepSysLog[stepKey]) stepSysLog[stepKey] = [];
+ stepSysLog[stepKey].push(entry);
+ const container = document.getElementById(sysSlotSlug(stepKey));
+ if (container) {
+ const wrapper = document.createElement('div');
+ wrapper.innerHTML = sysEntryHTML(entry);
+ const node = wrapper.children[0];
+ if (node) container.appendChild(node);
+ else rerenderSysSlot(stepKey);
+ }
+ return entry;
+}
+
+// In-place update — only the icon class, detail text, and time text change,
+// so the ticking timer never destroys/recreates DOM nodes and nothing
+// flickers. Falls back to a full slot rebuild if the card node is missing.
+function updateSysEntry(stepKey, entry, patch){
+ Object.assign(entry, patch);
+ const cardEl = document.getElementById(sysEntryElId(entry.id));
+ if (!cardEl) { rerenderSysSlot(stepKey); return; }
+ cardEl.className = 'act-card ' + entry.cls;
+ const iconEl = document.getElementById(sysEntryElId(entry.id) + '_icon');
+ if (iconEl) iconEl.className = 'act-card-icon' + (entry.active ? ' active' : '');
+ const detailEl = document.getElementById(sysEntryElId(entry.id) + '_detail');
+ if (detailEl) detailEl.innerHTML = entry.detail;
+ const timeEl = document.getElementById(sysEntryElId(entry.id) + '_time');
+ if (timeEl) timeEl.textContent = entry.time;
+}
+
+// Ticks an entry's time readout up to targetSeconds, respecting pause and
+// scenario resets — shared by connect/api/sys so every activity card shows
+// real elapsed time instead of a static "in progress" label.
+async function tickSysTimer(stepKey, entry, targetSeconds){
+ let t = 0;
+ await new Promise(resolve => {
+ const myToken = runToken;
+ const iv = setInterval(() => {
+ if (myToken !== runToken) { clearInterval(iv); resolve(); return; }
+ if (paused) return;
+ t += 0.1;
+ updateSysEntry(stepKey, entry, { time:`${t.toFixed(1)}s` });
+ if (t >= targetSeconds) { clearInterval(iv); resolve(); }
+ }, 100);
+ });
+}
+
+async function runConnect(phase){
+ const stepKey = currentBeatStep;
+ const targetSeconds = (phase.ms || 1200) / 1000;
+ const entry = beginSysEntry(stepKey, { cls:'', label:'Auto-filling from EHR', detail:`Connecting to ${phase.label}…` });
+ await tickSysTimer(stepKey, entry, targetSeconds);
+ if (phase.result === 'empty') {
+ updateSysEntry(stepKey, entry, { active:false, cls:'warn', detail:'No match — no identifiers to search on' });
+ } else {
+ updateSysEntry(stepKey, entry, { active:false, cls:'ok', detail:`${phase.label} · patient record linked` });
+ }
+ await wait(400);
+}
+
+async function runApi(phase){
+ const stepKey = currentBeatStep;
+ const target = phase.latencyTarget || 3;
+ const isCardVerified = phase.endpoint?.includes('card-verified');
+ const apiLabel = isCardVerified ? 'Calculating Copay' : 'Running RTE via Optum Real';
+ const entry = beginSysEntry(stepKey, { cls:'', label: apiLabel, detail:`Checking eligibility — ${phase.payer}` });
+ await tickSysTimer(stepKey, entry, target);
+ if (phase.result === 'ok') {
+ updateSysEntry(stepKey, entry, { active:false, cls:'ok', detail:`${phase.resultLabel} — ${phase.resultDetail}` });
+ } else if (phase.result === 'exception') {
+ updateSysEntry(stepKey, entry, { active:false, cls:'warn', detail:`${phase.resultLabel} — ${phase.resultDetail}` });
+ } else {
+ updateSysEntry(stepKey, entry, { active:false, cls:'deferred', detail:`${phase.resultLabel} — ${phase.resultDetail}` });
+ }
+ await wait(400);
+}
+
+async function runSys(phase){
+ const stepKey = currentBeatStep;
+ const targetSeconds = (phase.ms || 500) / 1000;
+ const entry = beginSysEntry(stepKey, { cls:'', label:phase.label, detail:phase.checking || 'Running system check…' });
+ await tickSysTimer(stepKey, entry, targetSeconds);
+ const toneCls = {ok:'ok', warn:'warn', err:'err', info:'deferred'}[phase.tone] || 'ok';
+ const lines = Array.isArray(phase.detail) ? phase.detail : [phase.detail];
+ updateSysEntry(stepKey, entry, { active:false, cls:toneCls, detail:`${phase.status} — ${lines.join(' · ')}` });
+ await wait(400);
+}
+
+// ── Auto-fill fields — sleek live-fill visualization inside the Auto-Fill
+// trace card on the left, mirroring the identity-fields pattern but with a
+// checkmark badge instead of a sparkle, colored to match each field's state.
+const AUTOFILL_CHECK_SVG = '<svg viewBox="0 0 24 24" width="11" height="11"><path d="M4 12 L10 18 L20 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function autofillFieldSlug(key){
+ return 'autofillField_' + key;
+}
+
+function autofillFieldRowHTML(key){
+ const f = autofillFieldsState[key];
+ if (!f) return '';
+ const rowId = autofillFieldSlug(key);
+ return `<div class="autofill-field ${f.cls || ''}" id="${rowId}">
+ <div class="autofill-field-label">${f.label}</div>
+ <div class="autofill-field-row">
+ <div class="autofill-field-box"><span class="autofill-field-value">${f.value}</span></div>
+ <span class="autofill-field-icon${f.active ? ' active' : ''}">${AUTOFILL_CHECK_SVG}</span>
+ </div>
+ <div class="autofill-field-tag">${f.tag || ''}</div>
+ </div>`;
+}
+
+function autofillFieldRowsHTML(){
+ return FIELD_ORDER.map(autofillFieldRowHTML).filter(Boolean).join('');
+}
+
+function renderAutofillFieldsSlotHTML(){
+ return `<div class="trace-autofill-fields" id="traceAutofillFields">${autofillFieldRowsHTML()}</div>`;
+}
+
+function rerenderAutofillFieldsSlot(){
+ const container = document.getElementById('traceAutofillFields');
+ if (!container) return;
+ container.innerHTML = autofillFieldRowsHTML();
+}
+
+async function runFields(sequence){
+ for (const [key, data] of sequence) {
+ fieldsState[key] = data;
+ renderFields([key]);
+ autofillFieldsState[key] = { label: data.label, value: data.value, tag: data.tag, cls: data.cls, active: true };
+ rerenderAutofillFieldsSlot();
+ await wait(170);
+ if (autofillFieldsState[key]) autofillFieldsState[key].active = false;
+ rerenderAutofillFieldsSlot();
+ await wait(150);
+ }
+}
+
+// ── Staff action checkpoint — lives inside the relevant left-hand trace
+// card (Staff Confirm, or Consent & HIPAA for the signature checkpoint)
+// instead of a fixed bar on the right desk view, driven by whichever step
+// is currently playing (tracked via currentBeatStep in playScenario).
+function renderActionSlotHTML(stepKey){
+ const st = interactiveUI[stepKey];
+ if (!st) return `<div class="trace-action-slot" id="traceActionSlot_${stepKey}"></div>`;
+ return `<div class="trace-action-slot" id="traceActionSlot_${stepKey}">${actionCardHTML(st)}</div>`;
+}
+function actionCardHTML(st){
+ return `<div class="trace-action-card">
+ <div class="trace-action-prompt">${st.prompt || ''}</div>
+ <div class="trace-action-btns">
+ <button class="act-btn primary" onclick="handleAction(1)">${st.primaryLabel || 'Confirm & Continue'}</button>
+ <button class="act-btn" onclick="handleAction(2)">${st.secondaryLabel || 'Correct Manually'}</button>
+ </div>
+ <div class="trace-action-note">Click a button above to continue the demo at this checkpoint.</div>
+ </div>`;
+}
+function rerenderActionSlot(stepKey){
+ const container = document.getElementById('traceActionSlot_' + stepKey);
+ if (!container) return;
+ const st = interactiveUI[stepKey];
+ container.innerHTML = st ? actionCardHTML(st) : '';
+}
+function handleAction(which){
+ if (!interactiveResolve) return;
+ const resolve = interactiveResolve;
+ interactiveResolve = null;
+ resolve(which);
+}
+
+// Bulk "Correct Manually" flow — switches every field card into an editable
+// text box pre-filled with the current (AI or auto-filled) value at once, so
+// staff can review and adjust anything before saving and moving on. The
+// save/cancel controls render in the same trace-panel slot as the original
+// confirm prompt, since it's the same on-screen checkpoint.
+async function runCorrectManually(stepKey){
+ bulkEditMode = true;
+ renderFields();
+ interactiveUI[stepKey] = { prompt: 'Review and adjust any field below, then save to continue.', primaryLabel: 'Save Changes & Continue', secondaryLabel: 'Cancel' };
+ rerenderActionSlot(stepKey);
+ const which = await new Promise(resolve => { interactiveResolve = resolve; });
+ delete interactiveUI[stepKey];
+ rerenderActionSlot(stepKey);
+ if (which === 1) {
+ FIELD_ORDER.forEach(key => {
+ const input = document.getElementById('bulkEditInput_' + key);
+ if (!input) return;
+ const newVal = input.value.trim();
+ const existing = fieldsState[key];
+ if (newVal && (!existing || newVal !== existing.value)) {
+ fieldsState[key] = {
+ cls: 'f-edited',
+ label: (existing && existing.label) || FIELD_LABELS[key] || key,
+ value: newVal,
+ tag: 'Edited by staff',
+ needsStaff: false
+ };
+ }
+ });
+ bulkEditMode = false;
+ renderFields();
+ return true;
+ }
+ bulkEditMode = false;
+ renderFields();
+ return false;
+}
+
+async function runInteractive(phase){
+ const stepKey = currentBeatStep;
+ interactiveUI[stepKey] = { prompt: phase.prompt, primaryLabel: phase.primaryLabel, secondaryLabel: phase.secondaryLabel };
+ rerenderActionSlot(stepKey);
+ const which = await new Promise(resolve => { interactiveResolve = resolve; });
+ delete interactiveUI[stepKey];
+ rerenderActionSlot(stepKey);
+ if (phase.mode === 'confirm' && which === 2) {
+ const proceeded = await runCorrectManually(stepKey);
+ if (!proceeded) { await runInteractive(phase); }
+ }
+}
+
+// ── Resolution-journey stack ─────────────────────────────────────────
+// A single persistent, growing timeline at the top of the desk card,
+// visible from the moment a scenario loads. It's not just an outreach
+// widget — every actor that actually touches the registration gets a row,
+// in order: the preferred channel first (SMS can close registration before
+// the patient ever reaches the clinic, so it's tried on its own merits, not
+// just as a Voice fallback), then Kiosk AI if the patient still needs to
+// check in on arrival, then Front Desk (Ambient Listening) if a human still
+// has to close something out. Each row starts active, then collapses into
+// a compact settled line once that actor is done — nothing ever disappears,
+// so staff can read the whole journey top to bottom at a glance.
+const CHANNEL_META = {
+ 'SMS': {cls:'ch-sms', label:'Two way SMS AI'},
+ 'Voice': {cls:'ch-voice', label:'Voice AI'},
+ 'Chatbot': {cls:'ch-chatbot', label:'Chatbot Link'},
+ 'kiosk': {cls:'ch-kiosk', label:'Kiosk AI'},
+ 'frontdesk': {cls:'ch-frontdesk', label:'Front Desk — Ambient Listening'}
+};
+let channelRows = {};   // outreach channels, keyed by channel name (e.g. 'Voice')
+let stageRows = {};     // kiosk/frontdesk, keyed by step ('kiosk' | 'frontdesk')
+let pendingSettleRow = null;
+let pendingSettleBeat = null;
+
+function buildChannelRow(channel, of){
+ const meta = CHANNEL_META[channel] || {cls:'ch-sms', label:channel};
+ const row = document.createElement('div');
+ row.className = 'channel-row ' + meta.cls + ' enter';
+ row.innerHTML = `<span class="channel-row-dot"></span><span class="channel-row-name">${meta.label}</span><span class="channel-row-status">Preferred channel — not yet contacted</span><div class="channel-row-pips">${Array.from({length: of || 3}, () => '<span class="pip"></span>').join('')}</div>`;
+ setTimeout(() => row.classList.remove('enter'), 400);
+ return row;
+}
+
+function renderChannelTrack(idx){
+ const track = document.getElementById('channelTrack');
+ if (!track) return;
+ track.innerHTML = '';
+ channelRows = {};
+ stageRows = {};
+ pendingSettleRow = null;
+ pendingSettleBeat = null;
+ const scenario = SCENARIOS[idx];
+ const p = scenario.patient;
+ if (!p.preferredChannel) { track.classList.remove('show'); return; }
+ track.classList.add('show');
+ // Pre-build a row for whichever channel is actually contacted first in
+ // this playthrough, sized to its real attempt count, instead of assuming
+ // the patient's stated preferredChannel and a fixed 3 — cadences vary
+ // per patient (e.g. Marcus's SMS gets 3 attempts, Diane's escalation
+ // Voice call only gets 1), and a confirmed AI-suggestion override can
+ // swap the channel entirely (Diane's confirmed variant skips SMS and
+ // calls directly), so this has to be override-aware to stay accurate.
+ const variants = appliedSuggestions[idx] ? CONFIRMED_VARIANTS[idx] : null;
+ let firstChannel = p.preferredChannel;
+ let of = 3;
+ for (const rawBeat of scenario.beats) {
+ const override = variants && variants[rawBeat.step];
+ const beat = override || rawBeat;
+ const match = beat.phases.find(ph => ph.type === 'channelStatus');
+ if (match) { firstChannel = match.channel; of = match.of; break; }
+ }
+ const row = buildChannelRow(firstChannel, of);
+ track.appendChild(row);
+ channelRows[firstChannel] = row;
+}
+
+async function runChannelStatus(phase){
+ const track = document.getElementById('channelTrack');
+ if (!track) return;
+ track.classList.add('show');
+
+ let row = channelRows[phase.channel];
+ if (!row) {
+ row = buildChannelRow(phase.channel, phase.of);
+ track.appendChild(row);
+ channelRows[phase.channel] = row;
+ }
+
+ const statusEl = row.querySelector('.channel-row-status');
+ const pips = row.querySelectorAll('.pip');
+ pips.forEach(p => p.classList.remove('current'));
+ const pip = pips[phase.attempt - 1];
+
+ if (phase.result === 'trying') {
+ row.classList.remove('settled', 'success');
+ if (pip) pip.className = 'pip used current';
+ statusEl.textContent = `Attempt ${phase.attempt} of ${phase.of} — reaching out…`;
+ } else if (phase.result === 'no-answer') {
+ if (pip) pip.className = 'pip fail';
+ if (phase.attempt >= phase.of) {
+ statusEl.textContent = `No response after ${phase.of} ${phase.of === 1 ? 'attempt' : 'attempts'}`;
+ row.classList.add('settled');
+ } else {
+ statusEl.textContent = `Attempt ${phase.attempt} of ${phase.of} — no response`;
+ }
+ } else if (phase.result === 'responded') {
+ if (pip) pip.className = 'pip success';
+ statusEl.textContent = 'Responded — registration resolved';
+ row.classList.add('settled', 'success');
+ }
+ await wait(240);
+}
+
+// Adds a new in-progress row to the same stack for a stage that isn't a
+// channel attempt (kiosk, front desk) — no pips, just a name + live status.
+function addStageRow(step, statusText){
+ const track = document.getElementById('channelTrack');
+ if (!track) return null;
+ track.classList.add('show');
+ const meta = CHANNEL_META[step];
+ const row = document.createElement('div');
+ row.className = 'channel-row ' + meta.cls + ' enter active-stage';
+ row.innerHTML = `<span class="channel-row-dot"></span><span class="channel-row-name">${meta.label}</span><span class="channel-row-status">${statusText}</span>`;
+ track.appendChild(row);
+ setTimeout(() => row.classList.remove('enter'), 400);
+ stageRows[step] = row;
+ return row;
+}
+
+// Collapses a stage row once its beat has finished, summarizing from the
+// beat's own trace data so the settled line reflects what actually happened.
+function settleStageRow(row, beat){
+ if (!row) return;
+ const t = beat.trace;
+ const statusEl = row.querySelector('.channel-row-status');
+ let text = t.label;
+ if (!text) {
+ if (t.state === 'done') text = 'Completed';
+ else if (t.state === 'needstaff') text = 'Needs staff — routed to front desk';
+ else if (t.state === 'exception') text = 'Exception flagged';
+ else text = 'Completed';
+ }
+ statusEl.textContent = text;
+ row.classList.remove('active-stage');
+ row.classList.add('settled');
+ if (t.state === 'done') row.classList.add('success');
+}
+
+// ── Stage-aware desk-card header ────────────────────────────────────
+// The "AI Check-In Assistant" card rebrands itself to match whichever
+// actor is actually doing the work right now: itself during auto/outreach,
+// "Kiosk AI" once the patient is at the kiosk, and "Ambient Listening" —
+// matching the Acute file's exact copy — once it's a front-desk encounter.
+// Skipped stages (a one-line "not needed") don't trigger a header or stack
+// change, so nothing flickers through stages that never really happen.
+function updateDeskHeadForStage(beat){
+ const titleEl = document.getElementById('deskHeadTitle');
+ const subEl = document.getElementById('deskHeadSub');
+ if (!titleEl || !subEl) return;
+
+ // Whatever stage row was left active from the previous beat is now done —
+ // settle it using its own beat data before starting the next one.
+ if (pendingSettleRow) {
+ settleStageRow(pendingSettleRow, pendingSettleBeat);
+ pendingSettleRow = null;
+ pendingSettleBeat = null;
+ }
+
+ if (beat.trace.state === 'skipped') return;
+
+ if (beat.step === 'kiosk') {
+ titleEl.textContent = 'Kiosk AI';
+ subEl.textContent = 'Self-service check-in via the in-clinic kiosk chatbot';
+ pendingSettleRow = addStageRow('kiosk', 'Self-service check-in in progress…');
+ pendingSettleBeat = beat;
+ } else if (beat.step === 'frontdesk') {
+ titleEl.textContent = 'Ambient Listening';
+ subEl.textContent = 'Captures spoken identifiers & conversational deltas';
+ pendingSettleRow = addStageRow('frontdesk', 'Ambient listening active…');
+ pendingSettleBeat = beat;
+ } else if (beat.step === 'outreach') {
+ titleEl.textContent = 'AI Check-In Assistant';
+ subEl.textContent = "Reaching out on the patient's preferred channel before arrival";
+ } else {
+ titleEl.textContent = 'AI Check-In Assistant';
+ subEl.textContent = "Auto-resolves via EHR/RTE first, then cascades to outreach, kiosk, and staff only for what's left";
+ }
+}
+
+async function runPhase(phase){
+ switch (phase.type) {
+ case 'status': setStatus(phase.text, phase.cls); await wait(280); break;
+ case 'transcript': await runTranscript(phase.messages, {mute: phase.mute}); break;
+ case 'formField': await runFormField(phase); break;
+ case 'aiField': await runAiField(phase); break;
+ case 'listen': setListen(phase.mode); await wait(200); break;
+ case 'connect': await runConnect(phase); break;
+ case 'api': await runApi(phase); break;
+ case 'sys': await runSys(phase); break;
+ case 'fields': await runFields(phase.sequence); break;
+ case 'identity': identityState = phase.data; renderIdentity(); await wait(400); break;
+ case 'wait': await wait(phase.ms); break;
+ case 'interactive': await runInteractive(phase); break;
+ case 'channelStatus': await runChannelStatus(phase); break;
+ }
+}
+
+async function playScenario(){
+ const scenario = SCENARIOS[scenarioIdx];
+ const myToken = runToken;
+ const variants = appliedSuggestions[scenarioIdx] ? CONFIRMED_VARIANTS[scenarioIdx] : null;
+ for (const rawBeat of scenario.beats) {
+ if (myToken !== runToken) return;
+ // If staff already confirmed this scenario's AI suggestion on a prior
+ // visit, swap in the improved outcome for whichever steps it affects —
+ // everything else plays out exactly as it normally would.
+ const override = variants && variants[rawBeat.step];
+ const beat = override ? { step: rawBeat.step, trace: override.trace, phases: override.phases } : rawBeat;
+ currentBeatStep = beat.step;
+ // Show this card as "In Progress" while its own phases are still
+ // playing — the real Flagged/Needs Staff/Resolved pill (and its detail
+ // rows) should only land once everything in this step has actually
+ // finished, not the instant the step starts.
+ stepState[beat.step] = { state: 'active' };
+ renderTrace(beat.step);
+ updateDeskHeadForStage(beat);
+ document.getElementById('progressNote').textContent = `Playing — ${scenario.name} · ${STEPS.find(s=>s.key===beat.step).label}`;
+ for (const phase of beat.phases) {
+ if (myToken !== runToken) return;
+ await runPhase(phase);
+ }
+ if (myToken !== runToken) return;
+ stepState[beat.step] = beat.trace;
+ renderTrace(beat.step);
+ }
+ if (myToken !== runToken) return;
+ setStatus('Registration complete', 'st-done');
+ document.getElementById('progressNote').textContent = `Scenario complete — ${scenario.name}`;
+ playing = false;
+ renderNextAction(scenarioIdx);
+}
+
+function startScenario(){
+ if (playing) return;
+ playing = true;
+ document.getElementById('startBtn').disabled = true;
+ document.getElementById('tbNextBtn').disabled = true;
+ playScenario();
+}
+
+function reset(){
+ runToken++;
+ playing = false;
+ paused = false;
+ stepState = {};
+ identityState = null;
+ fieldsState = {};
+ editingFieldKey = null;
+ bulkEditMode = false;
+ aiIdentityFields = {};
+ editingAiFieldKey = null;
+ autofillFieldsState = {};
+ stepSysLog = {};
+ sysEntrySeq = 0;
+ interactiveUI = {};
+ currentBeatStep = null;
+ collapsedSteps = {};
+ lastHighlightStep = null;
+ interactiveResolve = null;
+ activeFormEl = null;
+ activeFormTitle = null;
+ formFieldResolve = null;
+ formFieldFallback = '';
+ delete askedCallback[scenarioIdx];
+ clearNextAction();
+ document.getElementById('transcript').innerHTML = `
+ <div class="transcript-empty">
+ <p>One continuous timeline: silent auto-resolution, then — only for whatever's left — outreach on the patient's preferred channel, in-clinic kiosk chatbot, and front-desk ambient listening. Pick a scenario above, then start the encounter.</p>
+ <button class="start-btn" id="startBtn" onclick="startScenario()">Start Check-In</button>
+ </div>`;
+ setListen('idle');
+ setStatus('Waiting to start…', '');
+ renderTrace(null);
+ renderIdentity();
+ renderFields();
+ document.getElementById('deskHeadTitle').textContent = 'AI Check-In Assistant';
+ document.getElementById('deskHeadSub').textContent = "Auto-resolves via EHR/RTE first, then cascades to outreach, kiosk, and staff only for what's left";
+ renderChannelTrack(scenarioIdx);
+ document.getElementById('tbNextBtn').disabled = false;
+ document.getElementById('progressNote').textContent = 'Ready — click "Start Check-In" to begin';
+}
+
+// Topbar patient banner — unlike the Acute file, this patient is already
+// known (the appointment was pre-scheduled), so it's populated the moment
+// a scenario loads rather than waiting for an in-encounter identity phase.
+function renderTopbarPatient(idx){
+ const p = SCENARIOS[idx].patient;
+ const el = document.getElementById('tbPatientAvatar');
+ const nameEl = document.getElementById('tbPatientName');
+ const subEl = document.getElementById('tbPatientSub');
+ if (!el || !p) return;
+ el.className = 'tb-patient-avatar pop' + (p.avatarUnknown ? ' unknown' : '');
+ el.textContent = p.avatar;
+ nameEl.textContent = p.name;
+ subEl.textContent = `DOB ${p.dob || '—'} · ${p.gender || '—'} · ${p.mrn || '—'}`;
+ setTimeout(() => el.classList.remove('pop'), 450);
+}
+
+function updateScenarioLabel(){
+ renderTopbarPatient(scenarioIdx);
+}
+
+// Deep-link "already completed" view — for a patient whose entire
+// registration finished before they ever arrived, landing on their record
+// shows the finished waterfall directly rather than an empty "Start
+// Check-In" screen. Every stage card renders in its final,
+// collapsed-but-expandable state so staff can click into any of the 5
+// stages to see what already happened. If real outreach happened (a
+// conversation actually took place, not just silent Auto-Resolution), that
+// conversation is reconstructed and shown in the transcript panel too —
+// instantly, no typing animation — so it reads as history, not replay.
+function renderCompletedState(idx){
+ const scenario = SCENARIOS[idx];
+ reset();
+ scenarioIdx = idx;
+ renderTopbarPatient(scenarioIdx);
+ renderChannelTrack(scenarioIdx);
+
+ const allTranscriptMessages = [];
+ // autofillFieldsState is shared/global, so without snapshotting it here the
+ // Auto-Fill widget on the "Auto-Resolution" card would end up showing
+ // whatever the LAST beat wrote (e.g. SMS-confirmed values), not what
+ // Auto-Resolution itself actually captured or flagged. Freeze a copy right
+ // after the 'auto' beat's own fields run, then restore it before the final
+ // render so that card stays true to that step.
+ let autoFillSnapshot = null;
+ scenario.beats.forEach(beat => {
+ stepState[beat.step] = beat.trace;
+ updateDeskHeadForStage(beat);
+ beat.phases.forEach(phase => {
+ if (phase.type === 'identity') identityState = phase.data;
+ if (phase.type === 'fields') {
+ phase.sequence.forEach(([key, data]) => {
+ fieldsState[key] = data;
+ autofillFieldsState[key] = { label: data.label, value: data.value, tag: data.tag, cls: data.cls, active: false };
+ });
+ }
+ if (phase.type === 'channelStatus') runChannelStatus(phase);
+ if (phase.type === 'transcript' && phase.messages) allTranscriptMessages.push(...phase.messages);
+ });
+ if (beat.step === 'auto') autoFillSnapshot = { ...autofillFieldsState };
+ });
+
+ renderIdentity();
+ renderFields();
+ if (autoFillSnapshot) autofillFieldsState = autoFillSnapshot;
+ renderTrace(null);
+ setListen('done');
+ setStatus('Registration complete', 'st-done');
+
+ if (allTranscriptMessages.length) {
+ document.getElementById('transcript').innerHTML = '';
+ renderTranscriptStatic(allTranscriptMessages);
+ } else {
+ document.getElementById('transcript').innerHTML = `
+ <div class="transcript-empty">
+ <p>Auto-Resolution completed this check-in before ${scenario.name.split(' ')[0]} ever arrived — every field resolved from existing systems, so there's nothing to review here. Expand any stage on the left to see exactly what happened and when.</p>
+ </div>`;
+ }
+
+ document.getElementById('progressNote').textContent = `Scenario complete — ${scenario.name}`;
+ document.getElementById('tbNextBtn').disabled = false;
+ renderNextAction(idx);
+}
+
+function loadScenario(idx){
+ if (playing) return;
+ scenarioIdx = idx;
+ updateScenarioLabel();
+ if (SCENARIOS[idx].preResolved) renderCompletedState(idx);
+ else reset();
+}
+
+function nextScenario(){
+ loadScenario((scenarioIdx + 1) % SCENARIOS.length);
+}
+
+// init — deep-link support: arriving from the Registration Queue with
+// ?scenario=<index> pre-selects that patient instead of always defaulting
+// to the first one in the list.
+(function initFromQuery(){
+ const params = new URLSearchParams(window.location.search);
+ const q = parseInt(params.get('scenario'), 10);
+ if (!Number.isNaN(q) && q >= 0 && q < SCENARIOS.length) scenarioIdx = q;
+})();
+loadScenario(scenarioIdx);
+</script>
 </body>
 </html>
