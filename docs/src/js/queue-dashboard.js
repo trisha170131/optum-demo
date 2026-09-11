@@ -40,11 +40,25 @@ function getStatusClass(statusLabel) {
 function renderQueue() {
   const html = filteredPatients.map((p, i) => `
     <a class="queue-row" href="${p.file}?scenario=${p.scenario}">
-      <span class="queue-avatar">${p.name.split(' ').map(n => n[0]).join('')}</span>
-      <span class="queue-name">${p.name}</span>
-      <span class="queue-status ${getStatusClass(p.statusLabel)}">● ${p.statusLabel}</span>
-      <div class="queue-meta">${p.dept} · ${p.provider}</div>
-      <div class="queue-meta">${p.tagline}</div>
+      <div class="queue-left">
+        <span class="queue-avatar">${p.name.split(' ').map(n => n[0]).join('')}</span>
+        <div class="queue-info">
+          <div class="queue-name-row">
+            <span class="queue-name">${p.name}</span>
+            <span class="queue-status ${getStatusClass(p.statusLabel)}">● ${p.statusLabel}</span>
+          </div>
+          <div class="queue-meta">${p.dept} · ${p.provider}</div>
+          <div class="queue-meta">${p.tagline}</div>
+        </div>
+      </div>
+      <div class="queue-right">
+        <div class="queue-time">${p.time}</div>
+        <div class="queue-label">APPOINTMENT</div>
+        <a href="${p.file}?scenario=${p.scenario}" class="queue-action">
+          ${p.statusLabel.includes('Auto') ? 'View Details' : p.statusLabel.includes('SMS') ? 'View Details' : 'Start Registration'}
+          <span class="queue-arrow">›</span>
+        </a>
+      </div>
     </a>
   `).join('');
 
