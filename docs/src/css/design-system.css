@@ -1,0 +1,108 @@
+/* Optum Healthcare Registration System — Design System */
+
+:root{
+  --bg:#FAF8F4;
+  --panel:#FFFFFF;
+  --border:#ECE7DD;
+  --border-soft:#F1EDE6;
+  --gray:#6B7280;
+  --gray-tint:#EEF1F4;
+  --ink:#1E1C18;
+  --ink-soft:#6C685D;
+  --ink-faint:#A29D8F;
+  --orange:#FF5A1F;
+  --orange-dark:#E14E14;
+  --orange-tint:#FFEFE6;
+  --orange-tint2:#FFF7F2;
+  --blue:#3D66A6;
+  --blue-tint:#EAF1FB;
+  --teal:#1E7D82;
+  --teal-tint:#E4F4F4;
+  --green:#3F7D4C;
+  --green-tint:#EAF5EC;
+  --gold:#8A6D23;
+  --gold-tint:#F6EFDD;
+  --red:#B23A2E;
+  --red-tint:#FBEAE7;
+  --purple:#6B4FA0;
+  --purple-tint:#EFEAF7;
+
+  --r-lg:18px;
+  --r-md:12px;
+  --r-sm:8px;
+  --shadow-sm:0 1px 2px rgba(30,24,10,.05), 0 1px 1px rgba(30,24,10,.03);
+  --shadow-md:0 8px 24px rgba(30,24,10,.07);
+  --shadow-lg:0 16px 48px rgba(30,24,10,.14);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 90, 31, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 90, 31, 0);
+  }
+}
+
+@keyframes rowEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
