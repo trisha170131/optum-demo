@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optum · Acute Registration</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: #FAF8F4; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+    .header { text-align: center; margin-bottom: 40px; }
+    .logo { font-size: 32px; font-weight: 800; color: #FF5A1F; margin-bottom: 20px; }
+    .title { font-size: 28px; font-weight: 700; color: #1a1a1a; margin-bottom: 10px; }
+    .description { color: #666; margin-bottom: 30px; }
+    .back-btn { display: inline-block; padding: 10px 20px; background: #3D66A6; color: white; border-radius: 8px; text-decoration: none; margin-bottom: 30px; }
+    .back-btn:hover { background: #2d4a7a; }
+    .card { background: white; border: 1px solid #ECE7DD; border-radius: 12px; padding: 30px; margin-bottom: 20px; }
+    .card h2 { color: #1a1a1a; margin-bottom: 15px; }
+    .card p { color: #666; line-height: 1.6; margin-bottom: 10px; }
+    .info-box { background: #FBEAE7; padding: 20px; border-left: 4px solid #B23A2E; border-radius: 8px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">← Back to Index</a>
+    
+    <div class="header">
+      <div class="logo">Optum</div>
+      <div class="title">Acute Registration</div>
+      <div class="description">ED/walk-in registration with ambient listening for unknown patients</div>
+    </div>
+
+    <div class="card">
+      <h2>Acute Care Workflow</h2>
+      <p>This demo shows registration for emergency/walk-in patients where identity is unknown:</p>
+      <ul style="margin-left: 20px; margin-top: 10px;">
+        <li><strong>Patient Arrival:</strong> EMS or walk-in arrival with unknown identity</li>
+        <li><strong>Identity Resolution:</strong> Staff gathers patient info via ambient listening or manual entry</li>
+        <li><strong>EHR Lookup:</strong> System searches for patient in regional MPI</li>
+        <li><strong>RTE Verification:</strong> If match found, check insurance eligibility</li>
+        <li><strong>Registration Complete:</strong> Create record or merge with existing</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>8-Step Workflow</h2>
+      <div class="info-box">
+        1️⃣ Arrival & Consent<br>
+        2️⃣ Identity Capture (Ambient or Manual)<br>
+        3️⃣ Auto-Fill from EHR<br>
+        4️⃣ Real-Time Eligibility Check<br>
+        5️⃣ Delta Capture (New/Changed Fields)<br>
+        6️⃣ Staff Confirmation<br>
+        7️⃣ Consent Signature<br>
+        8️⃣ Copay Collection
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Key Integrations</h2>
+      <p><strong>EHR Matching:</strong> Search multiple identifiers (name, DOB, insurance) against regional MPI and Epic</p>
+      <p><strong>Ambient Listening:</strong> AI transcribes patient/staff conversation in real-time to extract demographics</p>
+      <p><strong>RTE Verification:</strong> Instant insurance eligibility and copay lookup</p>
+      <p><strong>Speech-to-Text:</strong> Convert ambient conversation to structured patient data</p>
+    </div>
+
+    <div class="card">
+      <h2>Scenarios</h2>
+      <p><strong>Scenario 1:</strong> High-confidence match - Patient known, auto-filled, RTE succeeds</p>
+      <p><strong>Scenario 2:</strong> Partial match - Insurance changed mid-visit, needs manual correction</p>
+      <p><strong>Scenario 3:</strong> Unknown patient - EMS arrival, trauma MRN, ambient listening</p>
+      <p><strong>Scenario 4:</strong> Declines recording - Patient opts out, staff types manually</p>
+    </div>
+
+    <div class="card">
+      <h2>Real-Time Eligibility in Acute Care</h2>
+      <p>RTE is critical for acute settings where:</p>
+      <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>Patients may not have current insurance information</li>
+        <li>Coverage eligibility must be verified before treatment</li>
+        <li>Copay collection happens at registration</li>
+        <li>Insurance changes are common (job loss, spouse coverage, etc.)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Status</h2>
+      <p>Frontend: ✅ Complete and functional</p>
+      <p>Backend Integration: ⏳ Ready for engineering to connect real APIs</p>
+      <p>Expected Timeline: 2-3 weeks for full backend integration</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optum · Ambulatory Check-In</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: #FAF8F4; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+    .header { text-align: center; margin-bottom: 40px; }
+    .logo { font-size: 32px; font-weight: 800; color: #FF5A1F; margin-bottom: 20px; }
+    .title { font-size: 28px; font-weight: 700; color: #1a1a1a; margin-bottom: 10px; }
+    .description { color: #666; margin-bottom: 30px; }
+    .back-btn { display: inline-block; padding: 10px 20px; background: #3D66A6; color: white; border-radius: 8px; text-decoration: none; margin-bottom: 30px; }
+    .back-btn:hover { background: #2d4a7a; }
+    .card { background: white; border: 1px solid #ECE7DD; border-radius: 12px; padding: 30px; margin-bottom: 20px; }
+    .card h2 { color: #1a1a1a; margin-bottom: 15px; }
+    .card p { color: #666; line-height: 1.6; margin-bottom: 10px; }
+    .scenario { background: #FFF0E6; border-left: 4px solid #FF5A1F; padding: 20px; margin: 20px 0; border-radius: 8px; }
+    .info-box { background: #E4F4F4; padding: 20px; border-radius: 8px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">← Back to Index</a>
+    
+    <div class="header">
+      <div class="logo">Optum</div>
+      <div class="title">Ambulatory Check-In</div>
+      <div class="description">AI-assisted pre-visit registration with 5-stage resolution waterfall</div>
+    </div>
+
+    <div class="card">
+      <h2>Demo Scenarios</h2>
+      <p>This page demonstrates the ambulatory check-in workflow with three patient scenarios:</p>
+      
+      <div class="scenario">
+        <strong>1. Elena Ruiz — Perfect Auto-Resolution</strong>
+        <p>Identity matched in EHR, RTE returns Active insurance ($35 copay), all fields resolve automatically</p>
+        <p><strong>Key Point:</strong> Watch the Real-Time Eligibility check succeed and populate copay data</p>
+      </div>
+
+      <div class="scenario">
+        <strong>2. Marcus Webb — RTE Exception + SMS</strong>
+        <p>RTE flags insurance as inactive. System sends SMS, patient responds with new insurance</p>
+        <p><strong>Key Point:</strong> See exception handling route to SMS outreach</p>
+      </div>
+
+      <div class="scenario">
+        <strong>3. Diane Foster — Full Cascade</strong>
+        <p>Auto-resolution flags items, SMS misses, escalates to kiosk, then front desk</p>
+        <p><strong>Key Point:</strong> Multi-stage fallback ensures high resolution</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>5-Stage Resolution Waterfall</h2>
+      <div class="info-box">
+        <strong>Stage 1:</strong> Auto-Resolution (EHR + RTE)<br>
+        <strong>Stage 2:</strong> Preferred Channel Outreach (SMS/Voice)<br>
+        <strong>Stage 3:</strong> Self Check-In at Clinic (Kiosk)<br>
+        <strong>Stage 4:</strong> Front Desk with Ambient Listening<br>
+        <strong>Stage 5:</strong> Manual/Exception Resolution
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Real-Time Eligibility (RTE) Integration</h2>
+      <p>The system calls Real-Time Eligibility at the start of auto-resolution to verify:</p>
+      <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>Insurance status (Active/Inactive)</li>
+        <li>In-Network coverage</li>
+        <li>Copay amounts by service type</li>
+        <li>Deductible remaining</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Architecture</h2>
+      <p>This demo shows how the system orchestrates multiple integrations:</p>
+      <div class="info-box">
+        • EHR (Epic MPI) for patient identity<br>
+        • RTE for insurance eligibility<br>
+        • MyChart for pre-visit confirmation<br>
+        • SMS/Voice APIs for outreach<br>
+        • Kiosk for self-service<br>
+        • Ambient listening for staff interactions
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Next Steps</h2>
+      <p>This frontend is ready for backend integration. Engineers will:</p>
+      <ol style="margin-left: 20px; margin-top: 10px;">
+        <li>Replace mock RTE calls with real Optum endpoints</li>
+        <li>Connect to actual EHR systems</li>
+        <li>Integrate real SMS/Voice APIs</li>
+        <li>Add staff authentication</li>
+        <li>Implement audit logging for HIPAA compliance</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>
