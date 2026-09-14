@@ -1,86 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Optum · Registration Queue</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/css/design-system.css">
-  <link rel="stylesheet" href="src/css/components.css">
-  <link rel="stylesheet" href="src/css/queue-dashboard.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optum · Registration Queue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#FAF8F4;
+ --panel:#FFFFFF;
+ --border:#ECE7DD;
+ --border-soft:#F1EDE6;
+ --gray:#6B7280;
+ --gray-tint:#EEF1F4;
+ --ink:#1E1C18;
+ --ink-soft:#6C685D;
+ --ink-faint:#A29D8F;
+ --orange:#FF5A1F;
+ --orange-dark:#E14E14;
+ --orange-tint:#FFEFE6;
+ --orange-tint2:#FFF7F2;
+ --blue:#3D66A6;
+ --blue-tint:#EAF1FB;
+ --teal:#1E7D82;
+ --teal-tint:#E4F4F4;
+ --green:#3F7D4C;
+ --green-tint:#EAF5EC;
+ --gold:#8A6D23;
+ --gold-tint:#F6EFDD;
+ --red:#B23A2E;
+ --red-tint:#FBEAE7;
+ --purple:#6B4FA0;
+ --purple-tint:#EFEAF7;
+ --r-lg:18px;
+ --r-md:12px;
+ --r-sm:8px;
+ --shadow-sm:0 1px 2px rgba(30,24,10,.05), 0 1px 1px rgba(30,24,10,.03);
+ --shadow-md:0 8px 24px rgba(30,24,10,.07);
+ --shadow-lg:0 16px 48px rgba(30,24,10,.14);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+ font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+ background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;
+ font-size:14px; line-height:1.5;
+}
+button{font-family:inherit; cursor:pointer;}
+a{color:inherit;}
+
+/* ===== Shell: sidebar + main ===== */
+.shell{display:flex; min-height:100vh;}
+
+.sidebar{
+ width:236px; flex-shrink:0; background:var(--panel); border-right:1px solid var(--border);
+ display:flex; flex-direction:column; padding:22px 14px;
+}
+.sb-logo{font-size:21px; font-weight:800; color:var(--orange); letter-spacing:-.5px; padding:4px 10px 26px;}
+.sb-nav{display:flex; flex-direction:column; gap:3px;}
+.sb-item{
+ display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:10px;
+ font-size:13px; font-weight:700; color:var(--ink-soft); text-decoration:none; transition:background .15s, color .15s;
+}
+.sb-item:hover{background:var(--gray-tint); color:var(--ink);}
+.sb-item.active{background:var(--orange-tint); color:var(--orange-dark);}
+.sb-item-icon{width:18px; height:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.sb-bottom{margin-top:auto; padding-top:14px; border-top:1px solid var(--border-soft);}
+
+/* ===== Main column ===== */
+.main-col{flex:1; min-width:0; display:flex; flex-direction:column;}
+
+.topbar{
+ background:var(--panel); border-bottom:1px solid var(--border);
+ padding:0 32px; height:68px; display:flex; align-items:center; gap:22px; flex-shrink:0;
+}
+.tb-title{font-size:16.5px; font-weight:800; color:var(--ink); flex-shrink:0; letter-spacing:-.2px;}
+
+.tb-search-wrap{position:relative; flex:1; max-width:440px;}
+.tb-search-icon{position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--ink-faint); display:flex; pointer-events:none;}
+.tb-search{width:100%; padding:10px 14px 10px 38px; border:1.5px solid var(--border-soft); border-radius:10px; font-size:13px; background:var(--gray-tint); font-family:inherit; color:var(--ink);}
+.tb-search:focus{outline:none; border-color:var(--orange); background:var(--panel);}
+.tb-search::placeholder{color:var(--ink-faint);}
+
+.tb-user{margin-left:auto; display:flex; align-items:center; gap:10px; flex-shrink:0;}
+.tb-user-avatar{width:38px; height:38px; border-radius:10px; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;}
+.tb-user-name{font-size:12.5px; font-weight:700; color:var(--ink); white-space:nowrap;}
+.tb-user-role{font-size:10.5px; color:var(--ink-faint); margin-top:1px; white-space:nowrap;}
+
+/* ===== Content ===== */
+.content{max-width:1080px; width:100%; margin:0 auto; padding:26px 32px 60px;}
+.breadcrumb{font-size:12.5px; color:var(--ink-faint); font-weight:600; margin-bottom:16px;}
+
+/* ===== KPI stat row ===== */
+.stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;}
+.stat-card{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); padding:18px 20px; box-shadow:var(--shadow-sm);}
+.stat-num{font-size:26px; font-weight:800; letter-spacing:-.4px; line-height:1.1;}
+.stat-num.accent{color:var(--orange);}
+.stat-label{font-size:12.5px; font-weight:700; color:var(--ink); margin-top:6px;}
+.stat-sub{font-size:11px; color:var(--ink-faint); margin-top:2px;}
+
+/* ===== List card (queue) ===== */
+.list-card{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); overflow:hidden;}
+.list-card-head{display:flex; align-items:center; gap:10px; padding:16px 20px; border-bottom:1px solid var(--border-soft); flex-wrap:wrap;}
+.list-card-title{font-size:14.5px; font-weight:800; color:var(--ink);}
+.list-card-badge{background:var(--orange); color:#fff; font-size:11px; font-weight:800; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.list-card-meta{margin-left:auto; font-size:11.5px; color:var(--ink-faint); white-space:nowrap;}
+
+.list-toolbar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px 20px; border-bottom:1px solid var(--border-soft); background:var(--gray-tint);}
+.qt-chip{padding:7px 13px; border-radius:99px; border:1.5px solid var(--border); background:var(--panel); font-size:11.5px; font-weight:700; color:var(--ink-soft); cursor:pointer; transition:all .15s; white-space:nowrap;}
+.qt-chip:hover{border-color:var(--orange);}
+.qt-chip.active{background:var(--orange); border-color:var(--orange); color:#fff;}
+.qt-sort{display:flex; align-items:center; gap:6px; padding:7px 13px; border-radius:99px; border:1.5px solid var(--border); background:var(--panel); font-size:11.5px; font-weight:700; color:var(--ink-soft); transition:all .15s; white-space:nowrap; margin-left:auto;}
+.qt-sort:hover{border-color:var(--blue); color:var(--blue);}
+.qt-sort-arrow{display:flex; align-items:center; transition:transform .2s;}
+.qt-sort-arrow.desc{transform:rotate(180deg);}
+
+.queue-list{display:flex; flex-direction:column;}
+.queue-row{
+ display:flex; align-items:center; gap:14px; padding:15px 20px; text-decoration:none; color:inherit;
+ border-bottom:1px solid var(--border-soft); transition:background .15s; animation:fadein .2s ease;
+}
+.queue-row:last-child{border-bottom:none;}
+.queue-row:hover{background:var(--orange-tint2);}
+.queue-row.preview{cursor:default;}
+.queue-row.preview:hover{background:none;}
+@keyframes fadein{from{opacity:0;} to{opacity:1;}}
+
+.queue-avatar{width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13.5px; color:#fff; flex-shrink:0; background:var(--blue);}
+.queue-row.preview .queue-avatar{background:var(--ink-faint);}
+
+.queue-main{flex:1; min-width:0;}
+.queue-name-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.queue-name{font-size:13.5px; font-weight:700; color:var(--ink);}
+.queue-context{font-size:11.5px; color:var(--ink-soft); margin-top:3px;}
+.queue-tagline{font-size:11px; color:var(--ink-faint); margin-top:2px; font-style:italic; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+.status-pill{display:inline-flex; align-items:center; gap:5px; font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:99px; text-transform:uppercase; letter-spacing:.3px; white-space:nowrap; flex-shrink:0;}
+.status-pill .dot{width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0;}
+.status-pill.st-scheduled{background:var(--gray-tint); color:var(--gray);}
+.status-pill.st-inprogress{background:var(--blue-tint); color:var(--blue);}
+.status-pill.st-outreach{background:var(--gold-tint); color:var(--gold);}
+.status-pill.st-resolved{background:var(--green-tint); color:var(--green);}
+.status-pill.st-frontdesk{background:var(--red-tint); color:var(--red);}
+.status-pill.st-flagged{background:var(--gold-tint); color:var(--gold);}
+.status-pill.st-manual{background:var(--purple-tint); color:var(--purple);}
+
+.setting-tag{display:inline-flex; align-items:center; font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:.3px; flex-shrink:0; margin-right:6px;}
+.setting-tag.acute{background:var(--blue-tint); color:var(--blue);}
+.setting-tag.ambulatory{background:var(--teal-tint); color:var(--teal);}
+
+.queue-time-block{text-align:right; flex-shrink:0; padding:0 2px;}
+.queue-time-pill{font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap; background:var(--gray-tint); padding:5px 10px; border-radius:99px; display:inline-block;}
+.queue-time-pill.next{background:var(--orange-tint); color:var(--orange-dark);}
+.queue-time-label{font-size:9px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.3px; font-weight:700; margin-top:5px; white-space:nowrap;}
+
+.queue-cta{
+ display:flex; align-items:center; gap:5px; font-size:11.5px; font-weight:800; color:var(--orange);
+ white-space:nowrap; flex-shrink:0; transition:color .15s, gap .15s; width:132px; justify-content:flex-end;
+}
+.queue-row:hover .queue-cta{color:var(--orange-dark); gap:8px;}
+.queue-cta.spacer{width:132px; flex-shrink:0;}
+
+.queue-empty{text-align:center; padding:50px 20px; color:var(--ink-faint); font-size:13px;}
+
+.legend-note{margin-top:18px; padding:13px 16px; background:var(--panel); border-radius:var(--r-md); border:1px solid var(--border); font-size:11.5px; color:var(--ink-soft); line-height:1.65;}
+.legend-note b{color:var(--ink);}
+</style>
 </head>
 <body>
-  <div class="shell">
-    <aside class="sidebar">
-      <div class="sb-logo">Optum</div>
-      <nav class="sb-nav">
-        <a class="sb-item active" href="queue-dashboard.html">
-          <span class="sb-item-icon"><svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor"/></svg></span>
-          Registration Queue
-        </a>
-        <a class="sb-item" href="acute-registration.html">
-          <span class="sb-item-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M3 12h4l2-7 4 14 2-7h6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          Acute Registration
-        </a>
-        <a class="sb-item" href="ambulatory-registration.html">
-          <span class="sb-item-icon"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 7 L12 12 L16 14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          Ambulatory Check-In
-        </a>
-      </nav>
-      <div class="sb-bottom">
-        <a class="sb-item" href="#" onclick="return false;">
-          <span class="sb-item-icon"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></svg></span>
-          Settings
-        </a>
-      </div>
-    </aside>
+<div class="shell">
 
-    <div class="main-col">
-      <div class="topbar">
-        <div class="tb-title">Registration Queue</div>
-        <div class="tb-search-wrap">
-          <span class="tb-search-icon"><svg viewBox="0 0 24 24" width="14" height="14"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"/><path d="M21 21 L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-          <input class="tb-search" id="searchInput" type="text" placeholder="Search patients, departments…" oninput="onSearch(this.value)">
-        </div>
-        <div class="tb-user">
-          <div class="tb-user-avatar">JL</div>
-          <div>
-            <div class="tb-user-name">Jordan Lee</div>
-            <div class="tb-user-role">Front Desk Supervisor</div>
-          </div>
-        </div>
-      </div>
+ <aside class="sidebar">
+ <div class="sb-logo">Optum</div>
+ <nav class="sb-nav">
+ <a class="sb-item active" href="queue-dashboard.html">
+ <span class="sb-item-icon"><svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor"/></svg></span>
+ Registration Queue
+ </a>
+ <a class="sb-item" href="acute-registration.html">
+ <span class="sb-item-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M3 12h4l2-7 4 14 2-7h6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+ Acute Registration
+ </a>
+ <a class="sb-item" href="ambulatory-registration.html">
+ <span class="sb-item-icon"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 7 L12 12 L16 14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+ Ambulatory Check-In
+ </a>
+ </nav>
+ <div class="sb-bottom">
+ <a class="sb-item" href="#" onclick="return false;">
+ <span class="sb-item-icon"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></svg></span>
+ Settings
+ </a>
+ </div>
+ </aside>
 
-      <div class="content">
-        <div class="breadcrumb" id="breadcrumbDate">Optum Medical Center</div>
+ <div class="main-col">
+ <div class="topbar">
+ <div class="tb-title">Registration Queue</div>
+ <div class="tb-search-wrap">
+ <span class="tb-search-icon"><svg viewBox="0 0 24 24" width="14" height="14"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"/><path d="M21 21 L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+ <input class="tb-search" id="searchInput" type="text" placeholder="Search patients, departments…" oninput="onSearch(this.value)">
+ </div>
+ <div class="tb-user">
+ <div class="tb-user-avatar">JL</div>
+ <div>
+ <div class="tb-user-name">Jordan Lee</div>
+ <div class="tb-user-role">Front Desk Supervisor</div>
+ </div>
+ </div>
+ </div>
 
-        <div class="stat-row" id="statRow"></div>
+ <div class="content">
+ <div class="breadcrumb" id="breadcrumbDate">Optum Medical Center</div>
 
-        <div class="list-card">
-          <div class="list-card-head">
-            <span class="list-card-title" id="listCardTitle">Today's Queue</span>
-            <span class="list-card-badge" id="queueBadge">3</span>
-            <span class="list-card-meta" id="queueMeta">Sorted by arrival time</span>
-          </div>
-          <div class="list-toolbar">
-            <button class="qt-chip active" data-view="today" onclick="setView('today')">Today</button>
-            <button class="qt-chip" data-view="week" onclick="setView('week')">Next 7 Days</button>
-            <button class="qt-chip" data-view="completed" onclick="setView('completed')">Completed</button>
-            <button class="qt-sort" id="sortBtn" onclick="toggleSort()">
-              <span id="sortLabel">Soonest First</span>
-              <span class="qt-sort-arrow" id="sortArrow"><svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 5 L12 19 M6 13 L12 19 L18 13" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            </button>
-          </div>
-          <div class="queue-list" id="queueList"></div>
-        </div>
+ <div class="stat-row" id="statRow"></div>
 
-        <div class="legend-note" id="legendNote"><b>How this works:</b> This queue shows ambulatory clinic appointments — selecting a patient deep-links straight to their scenario in the AI Check-In Assistant (resolution waterfall). Acute / ED patients and walk-ins use the Acute Registration link in the sidebar.</div>
-      </div>
-    </div>
-  </div>
+ <div class="list-card">
+ <div class="list-card-head">
+ <span class="list-card-title" id="listCardTitle">Today's Queue</span>
+ <span class="list-card-badge" id="queueBadge">3</span>
+ <span class="list-card-meta" id="queueMeta">Sorted by arrival time</span>
+ </div>
+ <div class="list-toolbar">
+ <button class="qt-chip active" data-view="today" onclick="setView('today')">Today</button>
+ <button class="qt-chip" data-view="week" onclick="setView('week')">Next 7 Days</button>
+ <button class="qt-chip" data-view="completed" onclick="setView('completed')">Completed</button>
+ <button class="qt-sort" id="sortBtn" onclick="toggleSort()">
+ <span id="sortLabel">Soonest First</span>
+ <span class="qt-sort-arrow" id="sortArrow"><svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 5 L12 19 M6 13 L12 19 L18 13" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+ </button>
+ </div>
+ <div class="queue-list" id="queueList"></div>
+ </div>
 
-  <script type="module" src="src/js/queue-dashboard.js"></script>
+ <div class="legend-note" id="legendNote"><b>How this works:</b> This queue shows ambulatory clinic appointments — selecting a patient deep-links straight to their scenario in the AI Check-In Assistant (resolution waterfall). Acute / ED patients and walk-ins use the Acute Registration link in the sidebar.</div>
+ </div>
+ </div>
+</div>
+
+<script>
+const TODAY_ANCHOR = new Date(2026, 7, 17);
+
+const PATIENTS = [
+ { name:'Elena Ruiz', file:'ambulatory-registration.html', scenario:0,
+ dept:'Cardiology Clinic', provider:'Dr. A. Alvarez', dayOffset:0, time:'9:00 AM', minutes:9*60,
+ tagline:'Full auto-resolution — zero outreach, zero staff time', stage:'resolved', statusLabel:'Auto-Resolved' },
+ { name:'Marcus Webb', file:'ambulatory-registration.html', scenario:1,
+ dept:'Family Medicine · New Patient', provider:'Dr. N. Park', dayOffset:0, time:'10:30 AM', minutes:10*60+30,
+ tagline:'Auto-resolution flags 4 items — closed via SMS AI outreach', stage:'resolved', statusLabel:'Resolved via SMS Outreach' },
+ { name:'Diane Foster', file:'ambulatory-registration.html', scenario:2,
+ dept:'Internal Medicine', provider:'Dr. T. Nguyen', dayOffset:0, time:'11:15 AM', minutes:11*60+15,
+ tagline:'Full cascade — Voice AI miss → kiosk → front desk (ambient) → exception', stage:'frontdesk', statusLabel:'Needs Front Desk' },
+ { name:'Wesley Chen', file:null, scenario:null,
+ dept:'Orthopedics', provider:'Dr. L. Bianchi', dayOffset:1, time:'9:15 AM', minutes:9*60+15,
+ tagline:'Auto-resolution completed 1 day pre-visit', stage:'resolved', statusLabel:'Auto-Resolved' },
+ { name:'Angela Brooks', file:null, scenario:null,
+ dept:'Endocrinology', provider:'Dr. M. Reyes', dayOffset:1, time:'2:00 PM', minutes:14*60,
+ tagline:'Auto-resolution flagged insurance mismatch', stage:'outreach', statusLabel:'SMS Outreach Sent' },
+ { name:'Thomas Reyes', file:null, scenario:null,
+ dept:'Family Medicine', provider:'Dr. N. Park', dayOffset:2, time:'10:00 AM', minutes:10*60,
+ tagline:'EHR match + eligibility check running', stage:'inprogress', statusLabel:'Auto-Resolution Running' },
+ { name:'Grace Kim', file:null, scenario:null,
+ dept:'Cardiology Clinic', provider:'Dr. A. Alvarez', dayOffset:3, time:'8:45 AM', minutes:8*60+45,
+ tagline:'EHR match + eligibility check running', stage:'inprogress', statusLabel:'Auto-Resolution Running' },
+ { name:'Daniel Osei', file:null, scenario:null,
+ dept:'Internal Medicine', provider:'Dr. T. Nguyen', dayOffset:3, time:'1:30 PM', minutes:13*60+30,
+ tagline:'Outreach window opens 3 days pre-visit', stage:'scheduled', statusLabel:'Not Yet Started' },
+ { name:'Rachel Nguyen', file:null, scenario:null,
+ dept:'Dermatology', provider:'Dr. K. Whitfield', dayOffset:4, time:'9:00 AM', minutes:9*60,
+ tagline:'Outreach window opens 3 days pre-visit', stage:'scheduled', statusLabel:'Not Yet Started' },
+ { name:'Victor Alvarado', file:null, scenario:null,
+ dept:'Family Medicine', provider:'Dr. N. Park', dayOffset:7, time:'11:00 AM', minutes:11*60,
+ tagline:'Outreach window opens 3 days pre-visit', stage:'scheduled', statusLabel:'Not Yet Started' }
+];
+
+const STAGE_META = {
+ scheduled: { cls:'st-scheduled' },
+ inprogress: { cls:'st-inprogress' },
+ outreach: { cls:'st-outreach' },
+ resolved: { cls:'st-resolved' },
+ frontdesk: { cls:'st-frontdesk' },
+ flagged: { cls:'st-flagged' },
+ manual: { cls:'st-manual' }
+};
+
+const COMPLETED = [
+ { name:'Elena Ruiz', file:'ambulatory-registration.html', scenario:0, setting:'Ambulatory',
+ dept:'Cardiology Clinic', provider:'Dr. A. Alvarez', time:'9:00 AM', dayOffset:0, minutes:9*60,
+ tagline:'Full auto-resolution — zero outreach, zero staff time', stage:'resolved', statusLabel:'Auto-Resolved' },
+ { name:'Marcus Webb', file:'ambulatory-registration.html', scenario:1, setting:'Ambulatory',
+ dept:'Family Medicine · New Patient', provider:'Dr. N. Park', time:'10:30 AM', dayOffset:0, minutes:10*60+30,
+ tagline:'Auto-resolution flags 4 items — closed via SMS AI outreach', stage:'resolved', statusLabel:'Resolved via SMS Outreach' },
+ { name:'Diane Foster', file:'ambulatory-registration.html', scenario:2, setting:'Ambulatory',
+ dept:'Internal Medicine', provider:'Dr. T. Nguyen', time:'11:15 AM', dayOffset:0, minutes:11*60+15,
+ tagline:'Full cascade — Voice AI miss → kiosk → front desk (ambient) → exception', stage:'flagged', statusLabel:'Completed — Exception Flagged' },
+ { name:'Maria Chen', file:'acute-registration.html', scenario:0, setting:'Acute',
+ dept:'Emergency Department', provider:'ED Triage', time:'7:42 AM', dayOffset:0, minutes:7*60+42,
+ tagline:'High-confidence, fully automated', stage:'resolved', statusLabel:'Auto-Registered' },
+ { name:'James Torres', file:'acute-registration.html', scenario:1, setting:'Acute',
+ dept:'Emergency Department', provider:'ED Triage', time:'8:55 AM', dayOffset:0, minutes:8*60+55,
+ tagline:'Partial match, insurance changed mid-visit', stage:'inprogress', statusLabel:'Registered — Corrected Mid-Visit' },
+ { name:'Robert Diaz', file:'acute-registration.html', scenario:2, setting:'Acute',
+ dept:'Emergency Department · Trauma', provider:'ED Trauma Team', time:'10:18 AM', dayOffset:0, minutes:10*60+18,
+ tagline:'Unresponsive, EMS arrival — temporary MRN', stage:'frontdesk', statusLabel:'Registered — HIM Review Pending' },
+ { name:'Priya Patel', file:'acute-registration.html', scenario:3, setting:'Acute',
+ dept:'Emergency Department', provider:'ED Triage', time:'12:03 PM', dayOffset:0, minutes:12*60+3,
+ tagline:'Declined ambient listening — staff typed manually', stage:'manual', statusLabel:'Registered — Manual Entry' }
+];
+
+let queueView = 'today';
+let sortDir = 'asc';
+let searchQuery = '';
+
+function initials(name){
+ return name.split(' ').filter(Boolean).map(p => p[0]).join('').slice(0,2).toUpperCase();
+}
+
+function escHtml(s){
+ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function compositeMinutes(p){
+ return p.dayOffset * 1440 + p.minutes;
+}
+
+function dateLabelFor(dayOffset){
+ if (dayOffset === 0) return 'Appointment';
+ const d = new Date(TODAY_ANCHOR);
+ d.setDate(d.getDate() + dayOffset);
+ return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+}
+
+const CTA_ARROW_SVG = '<svg viewBox="0 0 24 24" width="11" height="11"><path d="M9 6 L15 12 L9 18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function renderStats(){
+ if (queueView === 'completed') {
+ const total = COMPLETED.length;
+ const acuteCount = COMPLETED.filter(p => p.setting === 'Acute').length;
+ const ambCount = COMPLETED.filter(p => p.setting === 'Ambulatory').length;
+ const automatedCount = COMPLETED.filter(p => p.stage === 'resolved').length;
+ const followUpCount = COMPLETED.filter(p => p.stage === 'flagged' || p.stage === 'frontdesk').length;
+ const cards = [
+ { num: String(total), accent:false, label:'Completed Today', sub:`${acuteCount} Acute · ${ambCount} Ambulatory` },
+ { num: String(automatedCount), accent:false, label:'Fully Automated', sub:'Zero staff time' },
+ { num: String(total - automatedCount), accent:false, label:'Staff-Assisted', sub:'Corrected, confirmed, or typed manually' },
+ { num: String(followUpCount), accent:true, label:'Needs Follow-Up', sub:'Exception or HIM review pending' }
+ ];
+ document.getElementById('statRow').innerHTML = cards.map(c => `
+ <div class="stat-card">
+ <div class="stat-num${c.accent ? ' accent' : ''}">${c.num}</div>
+ <div class="stat-label">${c.label}</div>
+ <div class="stat-sub">${escHtml(c.sub)}</div>
+ </div>
+ `).join('');
+ return;
+ }
+
+ const scope = queueView === 'today' ? PATIENTS.filter(p => p.dayOffset === 0) : PATIENTS;
+ const total = scope.length;
+ const next = scope.slice().sort((a,b) => compositeMinutes(a) - compositeMinutes(b))[0];
+
+ let cards;
+ if (queueView === 'today') {
+ const deptCount = new Set(scope.map(p => p.dept)).size;
+ const providerCount = new Set(scope.map(p => p.provider)).size;
+ cards = [
+ { num: String(total), accent:false, label:'Patients in Queue', sub:'Ambulatory appointments today' },
+ { num: String(deptCount), accent:false, label:'Departments', sub:'Represented in queue' },
+ { num: String(providerCount), accent:false, label:'Providers', sub:'Scheduled today' },
+ { num: next ? next.time : '—', accent:true, label:'Next Arrival', sub: next ? `${next.name} · Today` : 'No patients queued' }
+ ];
+ } else {
+ const resolvedCount = scope.filter(p => p.stage === 'resolved').length;
+ const attentionCount = scope.filter(p => p.stage === 'outreach' || p.stage === 'frontdesk').length;
+ cards = [
+ { num: String(total), accent:false, label:'Patients in Pipeline', sub:'Next 7 days, all departments' },
+ { num: String(resolvedCount), accent:false, label:'Resolved Pre-Visit', sub:'Ready for visit, no staff time' },
+ { num: String(attentionCount), accent:false, label:'Needs Attention', sub:'Outreach pending or front desk' },
+ { num: next ? next.time : '—', accent:true, label:'Next Arrival', sub: next ? `${next.name} · ${dateLabelFor(next.dayOffset)}` : 'No patients queued' }
+ ];
+ }
+
+ document.getElementById('statRow').innerHTML = cards.map(c => `
+ <div class="stat-card">
+ <div class="stat-num${c.accent ? ' accent' : ''}">${c.num}</div>
+ <div class="stat-label">${c.label}</div>
+ <div class="stat-sub">${escHtml(c.sub)}</div>
+ </div>
+ `).join('');
+}
+
+function renderCompleted(){
+ let list = COMPLETED.slice();
+
+ if (searchQuery.trim()) {
+ const q = searchQuery.trim().toLowerCase();
+ list = list.filter(p =>
+ p.name.toLowerCase().includes(q) ||
+ p.dept.toLowerCase().includes(q) ||
+ p.provider.toLowerCase().includes(q) ||
+ p.setting.toLowerCase().includes(q)
+ );
+ }
+ list = list.sort((a, b) => sortDir === 'asc' ? compositeMinutes(a) - compositeMinutes(b) : compositeMinutes(b) - compositeMinutes(a));
+
+ document.getElementById('listCardTitle').textContent = 'Completed Registrations';
+ document.getElementById('queueBadge').textContent = String(list.length);
+ document.getElementById('queueMeta').textContent = 'Sorted by completion time';
+
+ document.getElementById('legendNote').innerHTML =
+ '<b>How this works:</b> Every registration that\'s finished today, across both care settings — auto-resolved, staff-assisted, or still carrying a flagged follow-up. Selecting a patient deep-links to exactly how their registration played out, with every stage expandable.';
+
+ const listEl = document.getElementById('queueList');
+ if (!list.length) {
+ listEl.innerHTML = `<div class="queue-empty">No completed registrations match this search.</div>`;
+ return;
+ }
+
+ listEl.innerHTML = list.map(p => {
+ const stageCls = (STAGE_META[p.stage] || STAGE_META.scheduled).cls;
+ const settingTag = `<span class="setting-tag ${p.setting.toLowerCase()}">${escHtml(p.setting)}</span>`;
+ const statusPill = `<span class="status-pill ${stageCls}"><span class="dot"></span>${escHtml(p.statusLabel)}</span>`;
+ const timeBlock = `<div class="queue-time-block"><span class="queue-time-pill">${p.time}</span><div class="queue-time-label">Completed</div></div>`;
+ const inner = `
+ <div class="queue-avatar">${initials(p.name)}</div>
+ <div class="queue-main">
+ <div class="queue-name-row">
+ <span class="queue-name">${escHtml(p.name)}</span>
+ ${statusPill}
+ </div>
+ <div class="queue-context">${settingTag}${escHtml(p.dept)} · ${escHtml(p.provider)}</div>
+ <div class="queue-tagline">${escHtml(p.tagline)}</div>
+ </div>
+ ${timeBlock}
+ <div class="queue-cta">View Registration ${CTA_ARROW_SVG}</div>
+ `;
+ return `<a class="queue-row" href="${p.file}?scenario=${p.scenario}">${inner}</a>`;
+ }).join('');
+}
+
+function render(){
+ if (queueView === 'completed') { renderCompleted(); return; }
+
+ let list = queueView === 'today' ? PATIENTS.filter(p => p.dayOffset === 0) : PATIENTS.slice();
+
+ if (searchQuery.trim()) {
+ const q = searchQuery.trim().toLowerCase();
+ list = list.filter(p =>
+ p.name.toLowerCase().includes(q) ||
+ p.dept.toLowerCase().includes(q) ||
+ p.provider.toLowerCase().includes(q)
+ );
+ }
+ list = list.sort((a, b) => sortDir === 'asc' ? compositeMinutes(a) - compositeMinutes(b) : compositeMinutes(b) - compositeMinutes(a));
+
+ const fullScope = queueView === 'today' ? PATIENTS.filter(p => p.dayOffset === 0) : PATIENTS;
+ const soonest = Math.min(...fullScope.map(compositeMinutes));
+
+ document.getElementById('listCardTitle').textContent = queueView === 'today' ? "Today's Queue" : 'Pre-Visit Pipeline — Next 7 Days';
+ document.getElementById('queueBadge').textContent = String(list.length);
+ document.getElementById('queueMeta').textContent = queueView === 'today' ? 'Sorted by arrival time' : 'Sorted by appointment date & time';
+
+ const legend = document.getElementById('legendNote');
+ legend.innerHTML = queueView === 'today'
+ ? '<b>How this works:</b> This queue shows ambulatory clinic appointments — selecting a patient deep-links straight to their scenario in the AI Check-In Assistant (resolution waterfall). Acute / ED patients and walk-ins use the Acute Registration link in the sidebar.'
+ : '<b>How this works:</b> Self check-in starts days before the visit, not day-of. Auto-resolution and AI outreach (SMS/voice) run in the days leading up to the appointment; only patients arriving today are actionable here — upcoming patients show live pipeline status and become clickable once their appointment day arrives.';
+
+ const listEl = document.getElementById('queueList');
+ if (!list.length) {
+ listEl.innerHTML = `<div class="queue-empty">No patients match this search.</div>`;
+ return;
+ }
+
+ listEl.innerHTML = list.map(p => {
+ const isToday = p.dayOffset === 0;
+ const stageCls = (STAGE_META[p.stage] || STAGE_META.scheduled).cls;
+ const statusPill = `<span class="status-pill ${stageCls}"><span class="dot"></span>${escHtml(p.statusLabel)}</span>`;
+ const timePill = `<span class="queue-time-pill${compositeMinutes(p) === soonest ? ' next' : ''}">${p.time}</span>`;
+ const timeBlock = `<div class="queue-time-block">${timePill}<div class="queue-time-label">${escHtml(dateLabelFor(p.dayOffset))}</div></div>`;
+ const isResolved = p.stage === 'resolved';
+ const cta = isToday
+ ? `<div class="queue-cta">${isResolved ? 'View Details' : 'Start Registration'} ${CTA_ARROW_SVG}</div>`
+ : `<div class="queue-cta spacer"></div>`;
+ const inner = `
+ <div class="queue-avatar">${initials(p.name)}</div>
+ <div class="queue-main">
+ <div class="queue-name-row">
+ <span class="queue-name">${escHtml(p.name)}</span>
+ ${statusPill}
+ </div>
+ <div class="queue-context">${escHtml(p.dept)} · ${escHtml(p.provider)}</div>
+ <div class="queue-tagline">${escHtml(p.tagline)}</div>
+ </div>
+ ${timeBlock}
+ ${cta}
+ `;
+ return isToday
+ ? `<a class="queue-row" href="${p.file}?scenario=${p.scenario}">${inner}</a>`
+ : `<div class="queue-row preview">${inner}</div>`;
+ }).join('');
+}
+
+function setView(v){
+ queueView = v;
+ document.querySelectorAll('.qt-chip').forEach(c => c.classList.toggle('active', c.dataset.view === v));
+ renderStats();
+ render();
+}
+
+function toggleSort(){
+ sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+ document.getElementById('sortLabel').textContent = sortDir === 'asc' ? 'Soonest First' : 'Latest First';
+ document.getElementById('sortArrow').classList.toggle('desc', sortDir === 'desc');
+ render();
+}
+
+function onSearch(v){
+ searchQuery = v;
+ render();
+}
+
+function renderBreadcrumb(){
+ document.getElementById('breadcrumbDate').textContent =
+ 'Optum Medical Center · ' + TODAY_ANCHOR.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+}
+
+renderBreadcrumb();
+renderStats();
+render();
+</script>
 </body>
 </html>
